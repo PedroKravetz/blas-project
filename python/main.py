@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+from PIL import Image as im 
 
 current_directory = os.getcwd()
 
@@ -31,13 +32,45 @@ def cgnr(g, h):
         f0=f1
         z0=z1
         if (abs(normalize(r1) - normalize(r0)) < 0.0001):
-            return r1
+            array2 = np.reshape(f1, (60, 60)).transpose()
+            data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
+            data2.save('teste.png') 
+            return f1
         r0=r1
-    
+
+def cgne(g, h):
+    f0 = 0
+    r0 = g
+    p0 = h.transpose().dot(r0)
+    while (1):
+        a0 = (r0.transpose().dot(r0))/(p0.transpose().dot(p0))
+        f1 = f0 + a0*p0
+        r1 = r0 - a0*h.dot(p0)
+        b0 = (r1.transpose().dot(r1))/(r0.transpose().dot(r0))
+        p1 = h.transpose().dot(r1) + b0*p0
+        if (abs(normalize(r1)-normalize(r0))<0.0001):
+            array2 = np.reshape(f1, (60, 60)).transpose()
+            data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
+            data2.save('teste2.png') 
+            return f1
+        p0 = p1
+        r0 = r1
+        f0 = f1
+
+def ganhoSinal1(matriz):
+    ganho1 = 0
+    for x in range(65):
+        if (x):
+            for y in range(795):
+                if (y):
+                    ganho1 = 100 + 0.05*y*np.sqrt(y)
+                    matriz[x-1][y-1]*=ganho1
+    return matriz
+
 
 h1 = np.array(pd.read_csv(current_directory+'\\h1.csv', header=None, delimiter=','))
 h2 = np.array(pd.read_csv(current_directory+'\\h2.csv', header=None, delimiter=','))
-g1 = np.array(pd.read_csv(current_directory+'\\A-60x60-1.csv', header=None, delimiter=';'))
+g1 = np.array(pd.read_csv(current_directory+'\\G-1.csv', header=None, delimiter=';'))
 g2 = np.array(pd.read_csv(current_directory+'\\A-30x30-1.csv', header=None, delimiter=';'))
 aux = h1.transpose().dot(h1).transpose()
 c1 = normalize(aux)
@@ -48,12 +81,6 @@ for j in aux:
         if (abs(i)>regularizacao1):
             regularizacao1=abs(i)
 regularizacao1*=0.1
-ganho1 = 0
-for x in range(65):
-    if (x):
-        for y in range(795):
-            if (y):
-                ganho1 = 100 + 0.05*y*np.sqrt(y)
 
 
 
@@ -79,11 +106,11 @@ print(h1)
 print(g1)
 print(c1)
 print(regularizacao1)
-print(ganho1)
 print(h2)
 print(g2)
 print(c2)
 print(regularizacao2)
 print(ganho2)
 print(cgnr(g1, h1))
-print(cgnr(g2, h2))
+print(cgne(g1, h1))
+#print(cgnr(g2, h2))
