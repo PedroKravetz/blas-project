@@ -146,35 +146,40 @@ public class Main {
         
         // ===== Reading CSVs =====
 
-        //List<Double> read_g1 = new ArrayList<Double>(); //delimiter: ;
+        List<Double> read_g1 = new ArrayList<Double>(); //delimiter: ;
         List<Double> read_g2 = new ArrayList<Double>(); //delimiter: ;
-        List<Double> aux = new ArrayList<Double>();
-        //List<List<Double>> read_h1 = new ArrayList<>(); // delimiter: ,
-        List<List<Double>> read_h2 = new ArrayList<>(); // delimiter: ,
+
+        int h1_row = 0;
+        int h1_col = 0;
+        int count = 0;
+        int h2_row = 0;
+        int h2_col = 0;
+        int count2 = 0;
 
         /*
         // ===== 60x60 =====
-        try(BufferedReader br = new BufferedReader(new FileReader(dir + "\\G-1.csv"))){
-            String line;
-            while((line = br.readLine()) != null){
-                String[] values = line.split(";");
-                for (int i = 0; i < values.length; i++){
-                    read_g1.add(Double.parseDouble(values[i]));
-                }
-            }
-        }
-
         try(BufferedReader br = new BufferedReader(new FileReader(dir + "\\h1.csv"))){
             String line;
             while((line = br.readLine()) != null){
-                if (aux.isEmpty() == false){
-                    aux.clear();
+                if (count == 0){
+                    String[] values = line.split(",");
+                    h1_col = values.length;
+                    count += 1;
                 }
+                h1_row += 1;
+            }
+        }
+
+        RealMatrix h1 = new Array2DRowRealMatrix(h1_row, h1_col);
+        count = 0;
+        try(BufferedReader br = new BufferedReader(new FileReader(dir + "\\h1.csv"))){
+            String line;
+            while((line = br.readLine()) != null){
                 String[] values = line.split(",");
                 for (int i = 0; i < values.length; i++){
-                    aux.add(Double.parseDouble(values[i]));
+                    h1.setEntry(count, i, Double.parseDouble(values[i]));
                 }
-                read_h1.add(List.copyOf(aux));
+                count += 1;
             }
         }
         */
@@ -193,28 +198,37 @@ public class Main {
         try(BufferedReader br = new BufferedReader(new FileReader(dir + "\\h2.csv"))){
             String line;
             while((line = br.readLine()) != null){
-                if (aux.isEmpty() == false){
-                    aux.clear();
+                if (count2 == 0){
+                    String[] values = line.split(",");
+                    h2_col = values.length;
+                    count2 += 1;
                 }
-                String[] values = line.split(",");
-                for (int i = 0; i < values.length; i++){
-                    aux.add(Double.parseDouble(values[i]));
-                }
-                read_h2.add(List.copyOf(aux));
+                h2_row += 1;
             }
         }
 
-        // ===== Changing list to [] =====
-        //double[] vector_g1 = getVector(read_g1);
-        //double[][] matrix_h1 = getMatrix(read_h1);
-        double[] vector_g2 = getVector(read_g2);
-        double[][] matrix_h2 = getMatrix(read_h2);
+        RealMatrix h2 = new Array2DRowRealMatrix(h2_row, h2_col);
+        count2 = 0;
+        try(BufferedReader br = new BufferedReader(new FileReader(dir + "\\h2.csv"))){
+            String line;
+            while((line = br.readLine()) != null){
+                String[] values = line.split(",");
+                for (int i = 0; i < values.length; i++){
+                    h2.setEntry(count2, i, Double.parseDouble(values[i]));
+                }
+                count2 += 1;
+            }
+        }
 
-        // ===== Working with Apache Commons Math
+        // ===== Changing vector list to [] =====
+        //double[] vector_g1 = getVector(read_g1);
+        //read_g1.clear();
+        double[] vector_g2 = getVector(read_g2);
+        read_g2.clear();
+
+        // ===== Vectors to Apache Commons Math
         //RealVector g1 = new ArrayRealVector(vector_g1);
-        //RealMatrix h1 = new Array2DRowRealMatrix(matrix_h1);
         RealVector g2 = new ArrayRealVector(vector_g2);
-        RealMatrix h2 = new Array2DRowRealMatrix(matrix_h2);
 
         // CGNR and CGNE
         //RealVector result1 = cgnr(g1, h1);
