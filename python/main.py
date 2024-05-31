@@ -6,6 +6,7 @@ import time
 from PIL import Image as im 
 from flask import Flask, request, jsonify
 from io import StringIO
+from datetime import datetime
 
 current_directory = os.getcwd()
 app = Flask(__name__)
@@ -45,7 +46,7 @@ def cgnr(g, h):
             array2 = np.reshape(f1, (60, 60)).transpose()
             data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
             data2.save('teste.png') 
-            return [data1, i]
+            return [f1, i]
         r0=r1
 
 def cgne(g, h):
@@ -64,34 +65,40 @@ def cgne(g, h):
             array2 = np.reshape(f1, (60, 60)).transpose()
             data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
             data2.save('teste2.png') 
-            return [data2, i]
+            return [f1, i]
         p0 = p1
         r0 = r1
         f0 = f1
 
 def ganhoSinal1(matriz):
     ganho1 = 0
-    for x in range(65):
-        if (x):
-            for y in range(795):
-                if (y):
-                    ganho1 = 100 + 0.05*y*np.sqrt(y)
-                    matriz[x-1][y-1]*=ganho1
+    for x in range(64):
+        for y in range(794):
+            ganho1 = 100 + 0.05*y*np.sqrt(y)
+            matriz[(x*794)+y]=matriz[(x*794)+y]*ganho1
     return matriz
 
 def ganhoSinal2(matriz):
     ganho2 = 0
-    for x in range(65):
-        if (x):
-            for y in range(437):
-                if (y):
-                    ganho2 = 100 + 0.05*y*np.sqrt(y)
-                    matriz[x-1][y-1]*=ganho2
+    for x in range(64):
+            for y in range(436):
+                ganho2 = 100 + 0.05*y*np.sqrt(y)
+                matriz[(x*436)+y]=matriz[(x*436)+y]*ganho2
     return matriz
 
-def regularizacao(matriz):
+def regularizacao1(matriz):
     regularizacao1=-1
-    aux = h1.transpose().dot(g1)
+    aux = h1.transpose().dot(matriz)
+    for j in aux:
+        for i in j:
+            if (abs(i)>regularizacao1):
+                regularizacao1=abs(i)
+    regularizacao1*=0.1
+    return regularizacao1
+
+def regularizacao2(matriz):
+    regularizacao1=-1
+    aux = h2.transpose().dot(matriz)
     for j in aux:
         for i in j:
             if (abs(i)>regularizacao1):
@@ -104,31 +111,44 @@ def reducao(matriz):
 
 @app.post("/blas")
 def control():
-    file = request.files.get("sinal")
-    file = file.read()
-    s=str(file,'utf-8')
-    data = StringIO(s) 
-    matriz = np.array(pd.read_csv(data, header=None, delimiter=','))
-    usuario = request.values["usuario"]
-    modelo = int(request.values["modelo"])
-    print(usuario)
-    print(modelo)
-    print(g1)
-    print(matriz)
+    json = request.json
+    matriz = np.array(json["sinal"])
+    usuario = json["usuario"]
+    modelo = int(json["modelo"])
+    # print(usuario)
+    # print(modelo)
+    # print(g1)
+    # print(matriz)
     inicio = 0
     fim =  0
+    matriz = matriz.astype(np.float64)
+    dataInicio = datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]
     if (modelo == 1):
+        print("teste 1")
         inicio= time.time()
+        #matriz = ganhoSinal1(matriz)
+        #c = regularizacao1(matriz)
+        #for x in range(matriz.size):
+        #    matriz[x]=matriz[x]*c
         lista = cgnr(matriz, h1)
     else:
+        print("teste 2")
         inicio= time.time()
+        #matriz = ganhoSinal2(matriz)
+        #c = regularizacao2(matriz)
+        #for x in range(matriz.size):
+        #    matriz[x]=matriz[x]*c
         lista = cgnr(matriz, h2)
     fim=time.time()-inicio
-    return {"sinal": lista[0].tolist(), "tempo": fim, "usuario": usuario, "interacoes": lista[1]}, 200
+    dataFinal = datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]
+    print(dataInicio)
+    print(dataFinal)
+    return {"sinal": lista[0].tolist(), "tempo": fim, "usuario": usuario, "interacoes": lista[1], "dataInicio": dataInicio, "dataFinal": dataFinal}, 200
     #return {"retorno": "verdadeiro"}, 200
 
 @app.route("/")
 def hello_world():
+    print(datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4])
     return "<p> Hello World!</p>"
 
 #print(h1)
