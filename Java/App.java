@@ -4,7 +4,6 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
-import java.util.Collections;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -217,7 +216,7 @@ public class App {
             br.close();
         }
 
-        
+
         // ===== 30x30 =====
         try(BufferedReader br = new BufferedReader(new FileReader(dir + "\\g-30x30-1.csv"))){
             String line;
