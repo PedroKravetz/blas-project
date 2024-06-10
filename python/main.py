@@ -148,7 +148,6 @@ def control():
 
 @app.route("/")
 def hello_world():
-    print(datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4])
     return "<p> Hello World!</p>"
 
 #print(h1)

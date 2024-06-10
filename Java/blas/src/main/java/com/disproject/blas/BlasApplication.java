@@ -15,11 +15,14 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.DoubleSummaryStatistics;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+
 import cern.colt.*;
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
@@ -36,6 +39,7 @@ public class BlasApplication {
     private static DoubleMatrix2D h2;
     private static DoubleMatrix1D g1;
     private static DoubleMatrix1D g2;
+    private final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     // return here to see if needs this
     static class ResultCG {
@@ -46,11 +50,11 @@ public class BlasApplication {
             iteration = i;
         }
         public DoubleMatrix1D getVectorColt(){return f0;}
-        public float[] getVectorFloat(){
+        public float[][] getVectorFloat(){
             double[] vecDouble = f0.toArray();
-            float[] vecFloat = new float[vecDouble.length];
+            float[][] vecFloat = new float[vecDouble.length][1];
             for (int i = 0; i < vecDouble.length; i++){
-                vecFloat[i] = (float) vecDouble[i];
+                vecFloat[i][0] = (float) vecDouble[i];
             }
             return vecFloat;
         }
@@ -81,20 +85,30 @@ public class BlasApplication {
         }
         System.out.println(input.getModelo());
 
+        Date start, finished;
+        long startTime, stopTime;
         // === Process
         ResultCG res;
         if(input.getModelo() == 1){
             System.out.println("Option: CGNR 60x60");
+            start= new Date();
+            startTime = System.currentTimeMillis();
             res = cgnr(g1, h1);
+            stopTime = System.currentTimeMillis();
+            finished = new Date();
             System.out.println("Finished. Sending result.");
         }
         else{
             System.out.println("Option: CGNR 30x30");
+            start= new Date();
+            startTime = System.currentTimeMillis();
             res = cgnr(g2, h2);
+            stopTime = System.currentTimeMillis();
+            finished = new Date();
             System.out.println("Finished. Sending result.");
         }
         
-        ResultForm result = new ResultForm(res.getVectorFloat(), "TEMPO", input.getUsuario(), res.getIteration(), "DATA INICIO", "DATA FINAL");
+        ResultForm result = new ResultForm(res.getVectorFloat(), (stopTime-startTime)/1000.0, input.getUsuario(), res.getIteration(), SDF.format(start), SDF.format(finished));
         return result;
     }
 
