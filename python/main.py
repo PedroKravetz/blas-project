@@ -7,12 +7,15 @@ from PIL import Image as im
 from flask import Flask, request, jsonify
 from io import StringIO
 from datetime import datetime
+import threading
 
 current_directory = os.getcwd()
 app = Flask(__name__)
 h1 = np.array(pd.read_csv(current_directory+'\\h1.csv', header=None, delimiter=','))
 h2 = np.array(pd.read_csv(current_directory+'\\h2.csv', header=None, delimiter=','))
 g1 = np.array(pd.read_csv(current_directory+'\\G-1.csv', header=None, delimiter=';'))
+MAX_CONCURRENT_THREADS = 5
+semaphore = threading.Semaphore(MAX_CONCURRENT_THREADS)
 
 def normalize(l):
     c=0
@@ -111,40 +114,45 @@ def reducao(matriz):
 
 @app.post("/blas")
 def control():
-    json = request.json
-    matriz = np.array(json["sinal"])
-    usuario = json["usuario"]
-    modelo = int(json["modelo"])
-    # print(usuario)
-    # print(modelo)
-    # print(g1)
-    # print(matriz)
-    inicio = 0
-    fim =  0
-    matriz = matriz.astype(np.float64)
-    dataInicio = datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]
-    if (modelo == 1):
-        print("teste 1")
-        inicio= time.time()
-        #matriz = ganhoSinal1(matriz)
-        #c = regularizacao1(matriz)
-        #for x in range(matriz.size):
-        #    matriz[x]=matriz[x]*c
-        lista = cgnr(matriz, h1)
-    else:
-        print("teste 2")
-        inicio= time.time()
-        #matriz = ganhoSinal2(matriz)
-        #c = regularizacao2(matriz)
-        #for x in range(matriz.size):
-        #    matriz[x]=matriz[x]*c
-        lista = cgnr(matriz, h2)
-    fim=time.time()-inicio
-    dataFinal = datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]
-    print(dataInicio)
-    print(dataFinal)
-    return {"sinal": lista[0].tolist(), "tempo": fim, "usuario": usuario, "interacoes": lista[1], "dataInicio": dataInicio, "dataFinal": dataFinal}, 200
-    #return {"retorno": "verdadeiro"}, 200
+    try:
+        semaphore.acquire()  # Bloqueia até que um permit esteja disponível
+        json = request.json
+        matriz = np.array(json["sinal"])
+        usuario = json["usuario"]
+        modelo = int(json["modelo"])
+        # print(usuario)
+        # print(modelo)
+        # print(g1)
+        # print(matriz)
+        inicio = 0
+        fim =  0
+        matriz = matriz.astype(np.float64)
+        dataInicio = datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]
+        if (modelo == 1):
+            print("teste 1")
+            inicio= time.time()
+            #matriz = ganhoSinal1(matriz)
+            #c = regularizacao1(matriz)
+            #for x in range(matriz.size):
+            #    matriz[x]=matriz[x]*c
+            lista = cgnr(matriz, h1)
+        else:
+            print("teste 2")
+            inicio= time.time()
+            #matriz = ganhoSinal2(matriz)
+            #c = regularizacao2(matriz)
+            #for x in range(matriz.size):
+            #    matriz[x]=matriz[x]*c
+            lista = cgnr(matriz, h2)
+        fim=time.time()-inicio
+        dataFinal = datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]
+        print(dataInicio)
+        print(dataFinal)
+        return {"sinal": lista[0].tolist(), "tempo": fim, "usuario": usuario, "interacoes": lista[1], "dataInicio": dataInicio, "dataFinal": dataFinal}, 200
+        #return {"retorno": "verdadeiro"}, 200
+    finally:
+        semaphore.release()
+    
 
 @app.route("/")
 def hello_world():
