@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "capstone4": "file:nodejs"
+  }
+}
