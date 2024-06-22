@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import axios from "axios";
 import fs from "fs"
 import { parse } from "csv-parse"
+import { Worker } from "worker_threads";
 
 const app = express();
 const port = 3000;
@@ -56,8 +57,44 @@ app.get("/random", async (req, res)=>{
   }
   );
   console.log(result)
-  res.render("index.ejs");
+  res.redirect("/");
 });
+
+app.get('/many-tests', async (req, res) => {
+  const count = parseInt(40);
+  const requests = [];
+
+  for (let i = 0; i < count; i++) {
+      requests.push(getRandomDataWithDelay());
+  }
+
+  try {
+      const results = await Promise.all(requests);
+      res.json(results);
+  } catch (error) {
+      res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
+const getRandomDataWithDelay = async () => {
+  const delay = Math.floor(Math.random() * 5000);
+  await new Promise(resolve => setTimeout(resolve, delay));
+  return getRandomData();
+};
+
+const getRandomData = async () => {
+  try {
+      const response = await axios.post(API_URL, {
+        "usuario": users[0],
+        "sinal": files[0],
+        "modelo": 1
+      }
+      );
+      return response.data;
+  } catch (error) {
+      throw new Error('Error fetching data');
+  }
+};
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);

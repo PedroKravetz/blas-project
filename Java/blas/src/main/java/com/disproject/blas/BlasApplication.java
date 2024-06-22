@@ -23,7 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 
-import cern.colt.*;
+import cern.colt.matrix.DoubleFactory1D;
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix1D;
@@ -89,11 +89,24 @@ public class BlasApplication {
         long startTime, stopTime;
         // === Process
         ResultCG res;
+        int rows = input.getSinal().length;
+        int cols = input.getSinal()[0].length;
+        
+        // Flattening the 2D float array to a 1D double array
+        double[] doubleArray = new double[rows * cols];
+        int index = 0;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                doubleArray[index++] = input.getSinal()[i][j];
+            }
+        }
+
+        DoubleMatrix1D doubleMatrix1D = DoubleFactory1D.dense.make(doubleArray);
         if(input.getModelo() == 1){
             System.out.println("Option: CGNR 60x60");
             start= new Date();
             startTime = System.currentTimeMillis();
-            res = cgnr(g1, h1);
+            res = cgnr(doubleMatrix1D, h1);
             stopTime = System.currentTimeMillis();
             finished = new Date();
             System.out.println("Finished. Sending result.");
@@ -102,7 +115,7 @@ public class BlasApplication {
             System.out.println("Option: CGNR 30x30");
             start= new Date();
             startTime = System.currentTimeMillis();
-            res = cgnr(g2, h2);
+            res = cgnr(doubleMatrix1D, h2);
             stopTime = System.currentTimeMillis();
             finished = new Date();
             System.out.println("Finished. Sending result.");
@@ -156,6 +169,7 @@ public class BlasApplication {
         }
 
         try{
+            System.out.println(dir);
             ImageIO.write(bi, "png", new File(dir + "\\" + alg + num + ".png"));
         } catch (IOException e){
             e.printStackTrace();
