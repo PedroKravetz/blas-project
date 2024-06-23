@@ -61,19 +61,15 @@ app.get("/random", async (req, res)=>{
 });
 
 app.get('/many-tests', async (req, res) => {
-  const count = parseInt(40);
+  const count = 100;
   const requests = [];
 
   for (let i = 0; i < count; i++) {
       requests.push(getRandomDataWithDelay());
   }
 
-  try {
-      const results = await Promise.all(requests);
-      res.json(results);
-  } catch (error) {
-      res.status(500).json({ error: 'Something went wrong' });
-  }
+  const results = await Promise.all(requests);
+  res.json(results);
 });
 
 const getRandomDataWithDelay = async () => {
@@ -81,19 +77,17 @@ const getRandomDataWithDelay = async () => {
   await new Promise(resolve => setTimeout(resolve, delay));
   return getRandomData();
 };
-
+ 
 const getRandomData = async () => {
-  try {
+  const user = Math.floor(Math.random() * 7);
+  const file = Math.floor(Math.random() * 6);
       const response = await axios.post(API_URL, {
-        "usuario": users[0],
-        "sinal": files[0],
-        "modelo": 1
+        "usuario": users[user],
+        "sinal": files[file],
+        "modelo": file > 2 ? 2 : 1
       }
       );
       return response.data;
-  } catch (error) {
-      throw new Error('Error fetching data');
-  }
 };
 
 app.listen(port, () => {

@@ -114,7 +114,7 @@ def reducao(matriz):
 
 @app.post("/blas")
 def control():
-    try:
+        dataInicio = datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]
         semaphore.acquire()  # Bloqueia até que um permit esteja disponível
         json = request.json
         matriz = np.array(json["sinal"])
@@ -127,9 +127,8 @@ def control():
         inicio = 0
         fim =  0
         matriz = matriz.astype(np.float64)
-        dataInicio = datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]
         if (modelo == 1):
-            print("teste 1")
+            #print("teste 1")
             inicio= time.time()
             #matriz = ganhoSinal1(matriz)
             #c = regularizacao1(matriz)
@@ -137,7 +136,7 @@ def control():
             #    matriz[x]=matriz[x]*c
             lista = cgnr(matriz, h1)
         else:
-            print("teste 2")
+            #print("teste 2")
             inicio= time.time()
             #matriz = ganhoSinal2(matriz)
             #c = regularizacao2(matriz)
@@ -146,12 +145,12 @@ def control():
             lista = cgnr(matriz, h2)
         fim=time.time()-inicio
         dataFinal = datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]
-        print(dataInicio)
-        print(dataFinal)
+        #print(dataInicio)
+        #print(dataFinal)
+        semaphore.release()
+        #print("Terminou")
         return {"sinal": lista[0].tolist(), "tempo": fim, "usuario": usuario, "interacoes": lista[1], "dataInicio": dataInicio, "dataFinal": dataFinal}, 200
         #return {"retorno": "verdadeiro"}, 200
-    finally:
-        semaphore.release()
     
 
 @app.route("/")

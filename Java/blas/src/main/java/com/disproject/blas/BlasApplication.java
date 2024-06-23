@@ -54,8 +54,8 @@ public class BlasApplication {
     private static DoubleMatrix1D g1;
     private static DoubleMatrix1D g2;
     private final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-    private static final int MAX_CONCURRENT_THREADS = 5;
-    private final Semaphore semaphore = new Semaphore(MAX_CONCURRENT_THREADS);
+    private static final int MAX_CONCURRENT_THREADS = 10;
+    private final Semaphore semaphore = new Semaphore(MAX_CONCURRENT_THREADS, true);
 
     // return here to see if needs this
     static class ResultCG {
@@ -107,24 +107,25 @@ public class BlasApplication {
             Date start, finished;
             long startTime, stopTime;
             start = new Date();
-            startTime = System.currentTimeMillis();
             semaphore.acquire();
             // === Printing what was received
-            System.out.println(input.getUsuario());
-            for (int i = 0; i < input.getSinal().length; i++) {
-                System.out.println(input.getSinal()[i]);
-            }
-            System.out.println(input.getModelo());
+            //System.out.println(input.getUsuario());
+            //for (int i = 0; i < input.getSinal().length; i++) {
+            //    System.out.println(input.getSinal()[i]);
+            //}
+            //System.out.println(input.getModelo());
             // === Process
             ResultCG res;
             if (input.getModelo() == 1) {
-                System.out.println("Option: CGNR 60x60");
+                //System.out.println("Option: CGNR 60x60");
+                startTime = System.currentTimeMillis();
                 res = cgnr(g1, h1);
-                System.out.println("Finished. Sending result.");
+                //System.out.println("Finished. Sending result.");
             } else {
-                System.out.println("Option: CGNR 30x30");
+                //System.out.println("Option: CGNR 30x30");
+                startTime = System.currentTimeMillis();
                 res = cgnr(g2, h2);
-                System.out.println("Finished. Sending result.");
+                //System.out.println("Finished. Sending result.");
             }
             stopTime = System.currentTimeMillis();
             finished = new Date();
