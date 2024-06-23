@@ -49,9 +49,14 @@ def cgnr(g, h):
         f0=f1
         z0=z1
         if (abs(normalize(r1) - normalize(r0)) < 0.0001):
-            array2 = np.reshape(f1, (60, 60)).transpose()
-            data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
-            data2.save('teste.png') 
+            if np.size(f1) == 900:
+                array2 = np.reshape(f1, (30, 30)).transpose()
+                data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
+                data2.save('cgnr30x30.png') 
+            elif np.size(f1) == 3600:
+                array2 = np.reshape(f1, (60, 60)).transpose()
+                data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
+                data2.save('cgnr60x60.png') 
             return [f1, i]
         r0=r1
 
@@ -68,9 +73,14 @@ def cgne(g, h):
         b0 = (r1.transpose().dot(r1))/(r0.transpose().dot(r0))
         p1 = h.transpose().dot(r1) + b0*p0
         if (abs(normalize(r1)-normalize(r0))<0.0001):
-            array2 = np.reshape(f1, (60, 60)).transpose()
-            data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
-            data2.save('teste2.png') 
+            if np.size(f1) == 900:
+                array2 = np.reshape(f1, (30, 30)).transpose()
+                data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
+                data2.save('cgne30x30.png')
+            elif np.size(f1) == 3600:
+                array2 = np.reshape(f1, (60, 60)).transpose()
+                data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
+                data2.save('cgne60x60.png') 
             return [f1, i]
         p0 = p1
         r0 = r1
@@ -119,6 +129,9 @@ def reducao(matriz):
 def control():
         dataInicio = datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]
         semaphore.acquire()  # Bloqueia até que um permit esteja disponível
+
+        print("> Dealing with a new client")
+
         json = request.json
         matriz = np.array(json["sinal"])
         usuario = json["usuario"]
