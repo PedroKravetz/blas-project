@@ -11,9 +11,12 @@ import threading
 
 current_directory = os.getcwd()
 app = Flask(__name__)
+
+print("Reading Start")
 h1 = np.array(pd.read_csv(current_directory+'\\h1.csv', header=None, delimiter=','))
 h2 = np.array(pd.read_csv(current_directory+'\\h2.csv', header=None, delimiter=','))
 g1 = np.array(pd.read_csv(current_directory+'\\G-1.csv', header=None, delimiter=';'))
+print("Reading Finished")
 MAX_CONCURRENT_THREADS = 5
 semaphore = threading.Semaphore(MAX_CONCURRENT_THREADS)
 
@@ -127,6 +130,7 @@ def control():
         inicio = 0
         fim =  0
         matriz = matriz.astype(np.float64)
+
         if (modelo == 1):
             #print("teste 1")
             inicio= time.time()
@@ -156,6 +160,9 @@ def control():
 @app.route("/")
 def hello_world():
     return "<p> Hello World!</p>"
+
+
+app.run(host="localhost", port=5000)
 
 #print(h1)
 #print(g1)
