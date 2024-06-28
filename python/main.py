@@ -8,6 +8,7 @@ from flask import Flask, request, jsonify
 from io import StringIO
 from datetime import datetime
 import threading
+import psutil
 
 current_directory = os.getcwd()
 app = Flask(__name__)
@@ -131,7 +132,7 @@ def control():
         semaphore.acquire()  # Bloqueia até que um permit esteja disponível
 
         print("> Dealing with a new client")
-
+        
         json = request.json
         matriz = np.array(json["sinal"])
         usuario = json["usuario"]
@@ -169,6 +170,11 @@ def control():
         return {"sinal": lista[0].tolist(), "tempo": fim, "usuario": usuario, "interacoes": lista[1], "dataInicio": dataInicio, "dataFinal": dataFinal}, 200
         #return {"retorno": "verdadeiro"}, 200
     
+@app.get("/performance")
+def system_performance():
+    cpu = psutil.cpu_percent(interval=1)
+    mem = psutil.virtual_memory()
+    return{"cpu": cpu, "mem": mem.percent}
 
 @app.route("/")
 def hello_world():
