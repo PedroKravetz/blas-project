@@ -19,6 +19,8 @@ import java.util.Date;
 import java.util.DoubleSummaryStatistics;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
+import javax.management.MBeanServerConnection;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -44,6 +46,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
+
+import java.lang.management.ManagementFactory;
+import com.sun.management.OperatingSystemMXBean;
 
 @RestController
 @SpringBootApplication
@@ -136,6 +141,47 @@ public class BlasApplication {
             semaphore.release();
         }
     }
+
+    @GetMapping("/performance")
+    public PerformanceForm getPerformance() throws Exception {
+        MBeanServerConnection mbsc = ManagementFactory.getPlatformMBeanServer();
+
+        OperatingSystemMXBean osMBean = ManagementFactory.newPlatformMXBeanProxy(
+        mbsc, ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, OperatingSystemMXBean.class);
+
+        long nanoBefore = System.nanoTime();
+        long cpuBefore = osMBean.getProcessCpuTime();
+
+        try{
+            Thread.sleep(1000);
+        }
+        catch(InterruptedException ex){
+            Thread.currentThread().interrupt();
+        }
+
+        long cpuAfter = osMBean.getProcessCpuTime();
+        long nanoAfter = System.nanoTime();
+
+        double percent;
+        if (nanoAfter > nanoBefore){
+            percent = (double) ((cpuAfter-cpuBefore)*10L)/(nanoAfter-nanoBefore);
+        }
+        else{
+            percent = (double) 0.0;
+        }
+
+        Runtime runtime = Runtime.getRuntime();
+        long total = runtime.totalMemory();
+        long free = runtime.freeMemory();
+        long used = total - free;
+        double percent_mem = ((double)used/(double)total)*100;
+
+        System.out.println("Cpu usage: " + percent + "%");
+        System.out.println("Memory Used: " + percent_mem + "%");
+        
+        return new PerformanceForm(percent, percent_mem);
+    }
+    
 
     static double[] getVector(List<Double> data) {
         double[] vector = new double[data.size()];
@@ -280,8 +326,7 @@ public class BlasApplication {
         }
     }
 
-    public static void main(String[] args) throws Exception {
-
+    public static void main(String[] args) throws Exception {     
         String dir = System.getProperty("user.dir");
         dir = dir.replace("C:", "");
 
