@@ -172,9 +172,11 @@ def control():
     
 @app.get("/performance")
 def system_performance():
+    semaphore.acquire()
     cpu = psutil.cpu_percent(interval=1)
     mem = psutil.virtual_memory()
-    return{"cpu": cpu, "mem": mem.percent}
+    semaphore.release()
+    return{"cpu": cpu, "mem": mem.percent, "time": datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]}
 
 @app.route("/")
 def hello_world():

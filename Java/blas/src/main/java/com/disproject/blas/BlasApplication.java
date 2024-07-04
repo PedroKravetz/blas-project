@@ -21,7 +21,10 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import com.sun.management.OperatingSystemMXBean;
 import java.text.SimpleDateFormat;
+import java.lang.management.ManagementFactory;
 
 import cern.colt.matrix.DoubleFactory1D;
 import cern.colt.matrix.DoubleMatrix1D;
@@ -109,27 +112,42 @@ public class BlasApplication {
             start = new Date();
             semaphore.acquire();
             // === Printing what was received
-            //System.out.println(input.getUsuario());
-            //for (int i = 0; i < input.getSinal().length; i++) {
-            //    System.out.println(input.getSinal()[i]);
-            //}
-            //System.out.println(input.getModelo());
+            // System.out.println(input.getUsuario());
+            // for (int i = 0; i < input.getSinal().length; i++) {
+            // System.out.println(input.getSinal()[i]);
+            // }
+            // System.out.println(input.getModelo());
             // === Process
             ResultCG res;
             if (input.getModelo() == 1) {
-                //System.out.println("Option: CGNR 60x60");
+                // System.out.println("Option: CGNR 60x60");
                 startTime = System.currentTimeMillis();
                 res = cgnr(g1, h1);
-                //System.out.println("Finished. Sending result.");
+                // System.out.println("Finished. Sending result.");
             } else {
-                //System.out.println("Option: CGNR 30x30");
+                // System.out.println("Option: CGNR 30x30");
                 startTime = System.currentTimeMillis();
                 res = cgnr(g2, h2);
-                //System.out.println("Finished. Sending result.");
+                // System.out.println("Finished. Sending result.");
             }
             stopTime = System.currentTimeMillis();
             finished = new Date();
-            return new ResultForm(res.getVectorFloat(), (stopTime - startTime) / 1000.0, input.getUsuario(), res.getIteration(), SDF.format(start), SDF.format(finished));
+            return new ResultForm(res.getVectorFloat(), (stopTime - startTime) / 1000.0, input.getUsuario(),
+                    res.getIteration(), SDF.format(start), SDF.format(finished));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            semaphore.release();
+        }
+    }
+
+    @GetMapping("/performance")
+    public PerformanceForm performance() {
+        try {
+            semaphore.acquire();
+            OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+            return new PerformanceForm(SDF.format(new Date()), String.valueOf(osBean.getCpuLoad() * 100),
+                    String.valueOf((osBean.getTotalMemorySize() - osBean.getFreeMemorySize())/(1.0*osBean.getTotalMemorySize())*100));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
@@ -164,7 +182,7 @@ public class BlasApplication {
 
         for (int i = 0; i < num; i++) {
             for (int j = 0; j < num; j++) {
-                //pixels[i][j] = (int) (Math.abs(image.get(k)*255));
+                // pixels[i][j] = (int) (Math.abs(image.get(k)*255));
                 pixels[i][j] = (int) (Math.abs(image.get(k) * (255 / max_value - min_value)));
                 k++;
             }
@@ -179,7 +197,7 @@ public class BlasApplication {
             }
         }
 
-        try{
+        try {
             System.out.println(dir);
             ImageIO.write(bi, "png", new File(dir + "\\" + alg + num + ".png"));
         } catch (IOException e) {
@@ -287,8 +305,8 @@ public class BlasApplication {
 
         // ===== Reading CSVs =====
 
-        List<Double> read_g1 = new ArrayList<Double>(); //delimiter: ;
-        List<Double> read_g2 = new ArrayList<Double>(); //delimiter: ;
+        List<Double> read_g1 = new ArrayList<Double>(); // delimiter: ;
+        List<Double> read_g2 = new ArrayList<Double>(); // delimiter: ;
 
         int h1_row = 0;
         int h1_col = 0;
@@ -309,7 +327,6 @@ public class BlasApplication {
             }
             br.close();
         }
-
 
         try (BufferedReader br = new BufferedReader(new FileReader(dir + "\\h1.csv"))) {
             String line;
@@ -350,7 +367,6 @@ public class BlasApplication {
             br.close();
         }
 
-
         try (BufferedReader br = new BufferedReader(new FileReader(dir + "\\h2.csv"))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -390,6 +406,5 @@ public class BlasApplication {
         // Start application
         SpringApplication.run(BlasApplication.class, args);
     }
-
 
 }
