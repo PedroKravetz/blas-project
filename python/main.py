@@ -10,6 +10,9 @@ from datetime import datetime
 import threading
 import psutil
 
+import base64
+from io import BytesIO
+
 current_directory = os.getcwd()
 app = Flask(__name__)
 
@@ -53,12 +56,20 @@ def cgnr(g, h):
             if np.size(f1) == 900:
                 array2 = np.reshape(f1, (30, 30)).transpose()
                 data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
+                buffered = BytesIO()
+                data2.save(buffered, format="PNG")
+                img_str = base64.b64encode(buffered.getvalue())
+                img_str = img_str.decode("utf-8")
                 data2.save('cgnr30x30.png') 
             elif np.size(f1) == 3600:
                 array2 = np.reshape(f1, (60, 60)).transpose()
                 data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
+                buffered = BytesIO()
+                data2.save(buffered, format="PNG")
+                img_str = base64.b64encode(buffered.getvalue())
+                img_str = img_str.decode("utf-8")
                 data2.save('cgnr60x60.png') 
-            return [f1, i]
+            return [f1, i, img_str]
         r0=r1
 
 def cgne(g, h):
@@ -77,12 +88,22 @@ def cgne(g, h):
             if np.size(f1) == 900:
                 array2 = np.reshape(f1, (30, 30)).transpose()
                 data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
+                buffered = BytesIO()
+                data2.save(buffered, format="PNG")
+                img_str = base64.b64encode(buffered.getvalue())
+                img_str = img_str.decode("utf-8")
+                print(img_str)
                 data2.save('cgne30x30.png')
             elif np.size(f1) == 3600:
                 array2 = np.reshape(f1, (60, 60)).transpose()
                 data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
+                buffered = BytesIO()
+                data2.save(buffered, format="PNG")
+                img_str = base64.b64encode(buffered.getvalue())
+                img_str = img_str.decode("utf-8")
+                print(img_str)
                 data2.save('cgne60x60.png') 
-            return [f1, i]
+            return [f1, i, img_str]
         p0 = p1
         r0 = r1
         f0 = f1
@@ -167,7 +188,7 @@ def control():
         #print(dataFinal)
         semaphore.release()
         #print("Terminou")
-        return {"sinal": lista[0].tolist(), "tempo": fim, "usuario": usuario, "interacoes": lista[1], "dataInicio": dataInicio, "dataFinal": dataFinal}, 200
+        return {"sinal": lista[0].tolist(), "str": lista[2], "tempo": fim, "usuario": usuario, "interacoes": lista[1], "dataInicio": dataInicio, "dataFinal": dataFinal}, 200
         #return {"retorno": "verdadeiro"}, 200
     
 @app.get("/performance")
