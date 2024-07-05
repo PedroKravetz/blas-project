@@ -21,6 +21,7 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import com.sun.management.OperatingSystemMXBean;
 import java.text.SimpleDateFormat;
@@ -48,6 +49,10 @@ import java.util.*;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
 
+import java.io.ByteArrayOutputStream;
+import org.apache.commons.codec.binary.Base64OutputStream;
+
+
 @RestController
 @SpringBootApplication
 public class BlasApplication {
@@ -64,10 +69,12 @@ public class BlasApplication {
     static class ResultCG {
         private static DoubleMatrix1D f0;
         private static int iteration;
+        private static String str;
 
-        public ResultCG(DoubleMatrix1D f, int i) {
+        public ResultCG(DoubleMatrix1D f, int i, String s) {
             f0 = f;
             iteration = i;
+            str = s;
         }
 
         public DoubleMatrix1D getVectorColt() {
@@ -85,6 +92,10 @@ public class BlasApplication {
 
         public int getIteration() {
             return iteration;
+        }
+
+        public String getStr(){
+            return str;
         }
     }
 
@@ -111,6 +122,13 @@ public class BlasApplication {
             long startTime, stopTime;
             start = new Date();
             semaphore.acquire();
+            System.out.println("> Dealing with a new client.");
+            DenseDoubleMatrix1D matrix = new DenseDoubleMatrix1D(input.getSinal().length);
+            for (int i = 0; i < input.getSinal().length; i++) {
+                for (int j = 0; j < input.getSinal()[i].length; j++){
+                    matrix.set(i, Double.parseDouble(Float.toString(input.getSinal()[i][j])));
+                }
+            }
             // === Printing what was received
             // System.out.println(input.getUsuario());
             // for (int i = 0; i < input.getSinal().length; i++) {
@@ -122,17 +140,17 @@ public class BlasApplication {
             if (input.getModelo() == 1) {
                 // System.out.println("Option: CGNR 60x60");
                 startTime = System.currentTimeMillis();
-                res = cgnr(g1, h1);
+                res = cgnr(matrix, h1);
                 // System.out.println("Finished. Sending result.");
             } else {
                 // System.out.println("Option: CGNR 30x30");
                 startTime = System.currentTimeMillis();
-                res = cgnr(g2, h2);
+                res = cgnr(matrix, h2);
                 // System.out.println("Finished. Sending result.");
             }
             stopTime = System.currentTimeMillis();
             finished = new Date();
-            return new ResultForm(res.getVectorFloat(), (stopTime - startTime) / 1000.0, input.getUsuario(),
+            return new ResultForm(res.getVectorFloat(), res.getStr(), (stopTime - startTime) / 1000.0, input.getUsuario(),
                     res.getIteration(), SDF.format(start), SDF.format(finished));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -163,7 +181,7 @@ public class BlasApplication {
         return vector;
     }
 
-    static void create_image(DoubleMatrix1D image, int n, String alg) {
+    static String create_image(DoubleMatrix1D image, int n, String alg) {
         String dir = System.getProperty("user.dir");
         dir = dir.replace("C:", "");
         int num = 0;
@@ -182,7 +200,7 @@ public class BlasApplication {
 
         for (int i = 0; i < num; i++) {
             for (int j = 0; j < num; j++) {
-                // pixels[i][j] = (int) (Math.abs(image.get(k)*255));
+                //pixels[i][j] = (int) (Math.abs(image.get(k)*255));
                 pixels[i][j] = (int) (Math.abs(image.get(k) * (255 / max_value - min_value)));
                 k++;
             }
@@ -197,13 +215,21 @@ public class BlasApplication {
             }
         }
 
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        OutputStream b64 = new Base64OutputStream(bos);
+        String result = "";
+
         try {
             System.out.println(dir);
+            ImageIO.write(bi, "png", b64);
+            result = bos.toString("UTF-8");
+
             ImageIO.write(bi, "png", new File(dir + "\\" + alg + num + ".png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        //System.out.println(result);
+        return result;
     }
 
     static DoubleMatrix1D add_ColtVector(DoubleMatrix1D a, DoubleMatrix1D b) {
@@ -258,8 +284,8 @@ public class BlasApplication {
 
             if (Math.abs(normalize_ColtVector(r1) - normalize_ColtVector(r0)) < 0.0001) {
                 // ===== Creating image =====
-                create_image(f0, f0.size(), "cgnr");
-                return new ResultCG(f0, i);
+                String str = create_image(f0, f0.size(), "cgnr");
+                return new ResultCG(f0, i, str);
             }
 
             p0 = add_ColtVector(z1, p0.assign(Functions.mult(b)));
@@ -289,8 +315,8 @@ public class BlasApplication {
 
             if (Math.abs(normalize_ColtVector(r1) - normalize_ColtVector(r0)) < 0.0001) {
                 // ===== Creating image =====
-                create_image(f0, f0.size(), "cgne");
-                return new ResultCG(f0, i);
+                String str = create_image(f0, f0.size(), "cgne");
+                return new ResultCG(f0, i, str);
             }
 
             p0 = add_ColtVector(alg.mult(h.viewDice(), r1), p0.assign(Functions.mult(b)));
@@ -305,9 +331,6 @@ public class BlasApplication {
 
         // ===== Reading CSVs =====
 
-        List<Double> read_g1 = new ArrayList<Double>(); // delimiter: ;
-        List<Double> read_g2 = new ArrayList<Double>(); // delimiter: ;
-
         int h1_row = 0;
         int h1_col = 0;
         int count = 0;
@@ -316,18 +339,6 @@ public class BlasApplication {
         int count2 = 0;
 
         // ===== 60x60 =====
-
-        try (BufferedReader br = new BufferedReader(new FileReader(dir + "\\G-1.csv"))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] values = line.split(";");
-                for (int i = 0; i < values.length; i++) {
-                    read_g1.add(Double.parseDouble(values[i]));
-                }
-            }
-            br.close();
-        }
-
         try (BufferedReader br = new BufferedReader(new FileReader(dir + "\\h1.csv"))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -355,18 +366,6 @@ public class BlasApplication {
         }
 
         // ===== 30x30 =====
-
-        try (BufferedReader br = new BufferedReader(new FileReader(dir + "\\g-30x30-1.csv"))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] values = line.split(";");
-                for (int i = 0; i < values.length; i++) {
-                    read_g2.add(Double.parseDouble(values[i]));
-                }
-            }
-            br.close();
-        }
-
         try (BufferedReader br = new BufferedReader(new FileReader(dir + "\\h2.csv"))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -392,16 +391,6 @@ public class BlasApplication {
             }
             br.close();
         }
-
-        // ===== Changing vector list to [] =====
-        double[] vector_g1 = getVector(read_g1);
-        read_g1.clear();
-        double[] vector_g2 = getVector(read_g2);
-        read_g2.clear();
-
-        // ===== Vectors to Colt
-        g1 = new DenseDoubleMatrix1D(vector_g1);
-        g2 = new DenseDoubleMatrix1D(vector_g2);
 
         // Start application
         SpringApplication.run(BlasApplication.class, args);
