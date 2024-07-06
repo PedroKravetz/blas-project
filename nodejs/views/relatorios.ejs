@@ -1,33 +1,46 @@
 <%- include("partials/header.ejs") %>
-<div class="px-4 pt-5 my-5 text-center border-bottom">
-    <h1 class="display-4 fw-bold text-body-emphasis">Relatório de Imagens</h1>
+<div class="px-4 my-5 text-center border-bottom">
+  <h1 class="display-4 fw-bold text-body-emphasis">Relatório de Imagens</h1>
 </div>
-<% if(locals.imagens) { %>
+<% if(locals.imagens) { %> 
   <% for (var i=0; i<locals.imagens.length;i++) { %>
     <div class="col-lg-6 mx-auto">
       <p class="lead mb-4">Usuário: <%= locals.imagens[i].usuario %></p>
       <p class="lead mb-4">Data Inicial: <%= locals.imagens[i].dataInicio %></p>
       <p class="lead mb-4">Data Final: <%= locals.imagens[i].dataFinal %></p>
       <p class="lead mb-4">Interações: <%= locals.imagens[i].interacoes %></p>
-      <p class="lead mb-4">Tempo de Reconstrução: <%= locals.imagens[i].tempo %></p>
-      <img src='data:image/png;base64, <%= locals.imagens[i].str %>' class="img-fluid border rounded-3 shadow-lg mb-4" alt="Example image" loading="lazy">
-      
+      <p class="lead mb-4">
+        Tempo de Reconstrução: <%= locals.imagens[i].tempo %>
+      </p>
+      <img
+        src="data:image/png;base64, <%= locals.imagens[i].str %>"
+        class="img-fluid border rounded-3 shadow-lg mb-4"
+        alt="Example image"
+        loading="lazy"
+        height="360px"
+        width="360px"
+      />
     </div>
     <% if (i+1!=locals.imagens.length) { %>
-      <hr/>
-    <% } %>
-  <% } %>
+      <hr />
+    <% } %> 
+  <% } %> 
 <% } %>
-<div class="px-4 pt-5 my-5 text-center border-bottom">
-  <h1 class="display-4 fw-bold text-body-emphasis">Relatório de Desempenho</h1>
-</div>
-<% if(locals.performance) { %>
-  <% for (var i=0; i<locals.performance.length;i++) { %>
-    <div class="col-lg-6 mx-auto">
-      <p class="lead mb-4">CPU: <%= locals.performance[i].cpu %>%</p>
-      <p class="lead mb-4">Memória: <%= locals.performance[i].mem %>%</p>
-      <p class="lead mb-4">Data e Hora: <%= locals.performance[i].time %></p>
-    </div>
-  <% } %>
-<% } %>
+  <div class="px-4 pt-5 my-5 text-center border-bottom">
+    <h1 class="display-4 fw-bold text-body-emphasis">
+      Relatório de Desempenho
+    </h1>
+  </div>
+  <% if(locals.performance) { %> 
+    <% for (var i=0; i<locals.performance.length;i++) { %>
+      <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">CPU: <%= locals.performance[i].cpu %>%</p>
+        <p class="lead mb-4">Memória: <%= locals.performance[i].mem %>%</p>
+        <p class="lead mb-4">Data e Hora: <%= locals.performance[i].time %></p>
+      </div>
+      <% if (i+1!=locals.performance.length) { %>
+        <hr />
+      <% } %>
+    <% } %> 
+  <% } %> 
 <%- include("partials/footer.ejs") %>

@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.DoubleSummaryStatistics;
@@ -25,33 +24,18 @@ import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import com.sun.management.OperatingSystemMXBean;
 import java.text.SimpleDateFormat;
-import java.lang.management.ManagementFactory;
 
-import cern.colt.matrix.DoubleFactory1D;
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.*;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicLong;
 
 import java.io.ByteArrayOutputStream;
 import org.apache.commons.codec.binary.Base64OutputStream;
-
 
 @RestController
 @SpringBootApplication
@@ -59,8 +43,6 @@ public class BlasApplication {
 
     private static DoubleMatrix2D h1;
     private static DoubleMatrix2D h2;
-    private static DoubleMatrix1D g1;
-    private static DoubleMatrix1D g2;
     private final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     private static final int MAX_CONCURRENT_THREADS = 10;
     private final Semaphore semaphore = new Semaphore(MAX_CONCURRENT_THREADS, true);
@@ -94,7 +76,7 @@ public class BlasApplication {
             return iteration;
         }
 
-        public String getStr(){
+        public String getStr() {
             return str;
         }
     }
@@ -122,10 +104,16 @@ public class BlasApplication {
             long startTime, stopTime;
             start = new Date();
             semaphore.acquire();
+            if (input.getPerformance() == 1) {
+                OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+                return new ResultForm(SDF.format(new Date()), String.valueOf(osBean.getCpuLoad() * 100),
+                        String.valueOf((osBean.getTotalMemorySize() - osBean.getFreeMemorySize())
+                                / (1.0 * osBean.getTotalMemorySize()) * 100));
+            }
             System.out.println("> Dealing with a new client.");
             DenseDoubleMatrix1D matrix = new DenseDoubleMatrix1D(input.getSinal().length);
             for (int i = 0; i < input.getSinal().length; i++) {
-                for (int j = 0; j < input.getSinal()[i].length; j++){
+                for (int j = 0; j < input.getSinal()[i].length; j++) {
                     matrix.set(i, Double.parseDouble(Float.toString(input.getSinal()[i][j])));
                 }
             }
@@ -150,7 +138,8 @@ public class BlasApplication {
             }
             stopTime = System.currentTimeMillis();
             finished = new Date();
-            return new ResultForm(res.getVectorFloat(), res.getStr(), (stopTime - startTime) / 1000.0, input.getUsuario(),
+            return new ResultForm(res.getVectorFloat(), res.getStr(), (stopTime - startTime) / 1000.0,
+                    input.getUsuario(),
                     res.getIteration(), SDF.format(start), SDF.format(finished));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -160,12 +149,13 @@ public class BlasApplication {
     }
 
     @GetMapping("/performance")
-    public PerformanceForm performance() {
+    public ResultForm performance() {
         try {
             semaphore.acquire();
             OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
-            return new PerformanceForm(SDF.format(new Date()), String.valueOf(osBean.getCpuLoad() * 100),
-                    String.valueOf((osBean.getTotalMemorySize() - osBean.getFreeMemorySize())/(1.0*osBean.getTotalMemorySize())*100));
+            return new ResultForm(SDF.format(new Date()), String.valueOf(osBean.getCpuLoad() * 100),
+                    String.valueOf((osBean.getTotalMemorySize() - osBean.getFreeMemorySize())
+                            / (1.0 * osBean.getTotalMemorySize()) * 100));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
@@ -200,7 +190,7 @@ public class BlasApplication {
 
         for (int i = 0; i < num; i++) {
             for (int j = 0; j < num; j++) {
-                //pixels[i][j] = (int) (Math.abs(image.get(k)*255));
+                // pixels[i][j] = (int) (Math.abs(image.get(k)*255));
                 pixels[i][j] = (int) (Math.abs(image.get(k) * (255 / max_value - min_value)));
                 k++;
             }
@@ -220,7 +210,7 @@ public class BlasApplication {
         String result = "";
 
         try {
-            System.out.println(dir);
+            //System.out.println(dir);
             ImageIO.write(bi, "png", b64);
             result = bos.toString("UTF-8");
 
@@ -228,7 +218,7 @@ public class BlasApplication {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //System.out.println(result);
+        // System.out.println(result);
         return result;
     }
 

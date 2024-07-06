@@ -4,7 +4,7 @@ import os
 import io
 import time
 from PIL import Image as im 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect
 from io import StringIO
 from datetime import datetime
 import threading
@@ -16,12 +16,12 @@ from io import BytesIO
 current_directory = os.getcwd()
 app = Flask(__name__)
 
-print("Reading Start")
+#print("Reading Start")
 h1 = np.array(pd.read_csv(current_directory+'\\h1.csv', header=None, delimiter=','))
 h2 = np.array(pd.read_csv(current_directory+'\\h2.csv', header=None, delimiter=','))
 g1 = np.array(pd.read_csv(current_directory+'\\G-1.csv', header=None, delimiter=';'))
-print("Reading Finished")
-MAX_CONCURRENT_THREADS = 5
+#print("Reading Finished")
+MAX_CONCURRENT_THREADS = 10
 semaphore = threading.Semaphore(MAX_CONCURRENT_THREADS)
 
 def normalize(l):
@@ -151,10 +151,12 @@ def reducao(matriz):
 def control():
         dataInicio = datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]
         semaphore.acquire()  # Bloqueia até que um permit esteja disponível
-
-        print("> Dealing with a new client")
-        
         json = request.json
+        if (int(json["performance"])==1):
+            semaphore.release()
+            return redirect("http://localhost:5000/performance", code=302)
+        #print("> Dealing with a new client")
+        
         matriz = np.array(json["sinal"])
         usuario = json["usuario"]
         modelo = int(json["modelo"])

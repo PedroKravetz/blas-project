@@ -8,9 +8,12 @@ const app = express();
 const port = 3000;
 const API_URL = "http://localhost:5000";
 
+let requisicoes = 0;
+
 const users = ["Camilla", "Pedro", "Paulo", "Ana", "Maria", "Eduardo", "José"];
 let files = [];
 let arquivo = [];
+
 fs.createReadStream("../G-1.csv")
   .pipe(parse({ delimiter: "," }))
   .on("data", function (row) {
@@ -61,17 +64,29 @@ app.get("/", (req, res) => {
 
 app.get("/random", async (req, res) => {
   let performance1 = await getPerformance();
+
   const result = await axios.post(API_URL + "/blas", {
     usuario: users[0],
-    sinal: files[0],
+    sinal: files[2],
     modelo: 1,
+    performance: 0,
   });
+
   let performance2 = await getPerformance();
+
   let aux = [];
   let aux2 = [];
+
   aux.push(result.data);
   aux2.push(performance1);
   aux2.push(performance2);
+
+  aux2.sort(function (a, b) {
+    // Turn your strings into dates, and then subtract them
+    // to get a value that is either negative, positive, or zero.
+    return new Date(a.time) - new Date(b.time);
+  });
+
   res.render("relatorios.ejs", { imagens: aux, performance: aux2 });
 });
 
@@ -80,21 +95,34 @@ app.get("/many-tests", async (req, res) => {
   const requests = [];
 
   for (let i = 0; i < count; i++) {
+    requisicoes++;
     requests.push(getRandomDataWithDelay());
-    if (i != 0 && i % 10 == 0) {
-      requests.push(getPerformance());
+    if (requisicoes % 5 == 0) {
+      requests.push(getRandomDataWithDelay());
     }
   }
+
+  requisicoes = 0;
   let aux2 = [];
+
   let performance1 = await getPerformance();
   const results = await Promise.all(requests);
   let performance2 = await getPerformance();
+
+  requisicoes = 0;
   aux2.push(performance1);
   let performances = results.filter((result) => result.time);
   for (let i = 0; i < performances.length; i++) {
     aux2.push(performances[i]);
   }
   aux2.push(performance2);
+
+  aux2.sort(function (a, b) {
+    // Turn your strings into dates, and then subtract them
+    // to get a value that is either negative, positive, or zero.
+    return new Date(a.time) - new Date(b.time);
+  });
+
   res.render("relatorios.ejs", {
     imagens: results.filter((result) => result.usuario),
     performance: aux2,
@@ -110,10 +138,12 @@ const getRandomDataWithDelay = async () => {
 const getRandomData = async () => {
   const user = Math.floor(Math.random() * 7);
   const file = Math.floor(Math.random() * 6);
+  requisicoes++;
   const response = await axios.post(API_URL + "/blas", {
     usuario: users[user],
     sinal: files[file],
     modelo: file > 2 ? 2 : 1,
+    performance: requisicoes % 5 == 0 ? 1 : 0,
   });
   return response.data;
 };
