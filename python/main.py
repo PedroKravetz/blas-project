@@ -92,7 +92,7 @@ def cgne(g, h):
                 data2.save(buffered, format="PNG")
                 img_str = base64.b64encode(buffered.getvalue())
                 img_str = img_str.decode("utf-8")
-                print(img_str)
+                #print(img_str)
                 data2.save('cgne30x30.png')
             elif np.size(f1) == 3600:
                 array2 = np.reshape(f1, (60, 60)).transpose()
@@ -101,7 +101,7 @@ def cgne(g, h):
                 data2.save(buffered, format="PNG")
                 img_str = base64.b64encode(buffered.getvalue())
                 img_str = img_str.decode("utf-8")
-                print(img_str)
+                #print(img_str)
                 data2.save('cgne60x60.png') 
             return [f1, i, img_str]
         p0 = p1
@@ -160,37 +160,41 @@ def control():
         matriz = np.array(json["sinal"])
         usuario = json["usuario"]
         modelo = int(json["modelo"])
+        metodo = json["metodo"]
         # print(usuario)
         # print(modelo)
         # print(g1)
         # print(matriz)
         inicio = 0
         fim =  0
+        inicio= time.time()
         matriz = matriz.astype(np.float64)
 
-        if (modelo == 1):
+        if (modelo == 1 and metodo == "cgnr"):
             #print("teste 1")
-            inicio= time.time()
             #matriz = ganhoSinal1(matriz)
             #c = regularizacao1(matriz)
             #for x in range(matriz.size):
             #    matriz[x]=matriz[x]*c
             lista = cgnr(matriz, h1)
-        else:
+        elif (metodo == "cgnr"):
             #print("teste 2")
-            inicio= time.time()
             #matriz = ganhoSinal2(matriz)
             #c = regularizacao2(matriz)
             #for x in range(matriz.size):
             #    matriz[x]=matriz[x]*c
             lista = cgnr(matriz, h2)
+        elif(modelo == 1):
+            lista = cgne(matriz, h1)
+        else:
+            lista = cgne(matriz, h2)
         fim=time.time()-inicio
         dataFinal = datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]
         #print(dataInicio)
         #print(dataFinal)
         semaphore.release()
         #print("Terminou")
-        return {"sinal": lista[0].tolist(), "str": lista[2], "tempo": fim, "usuario": usuario, "interacoes": lista[1], "dataInicio": dataInicio, "dataFinal": dataFinal}, 200
+        return {"sinal": lista[0].tolist(), "str": lista[2], "tempo": fim, "usuario": usuario, "interacoes": lista[1], "dataInicio": dataInicio, "dataFinal": dataFinal, "metodo":  metodo.upper()}, 200
         #return {"retorno": "verdadeiro"}, 200
     
 @app.get("/performance")

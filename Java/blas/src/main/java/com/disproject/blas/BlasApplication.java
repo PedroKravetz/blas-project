@@ -111,6 +111,7 @@ public class BlasApplication {
                                 / (1.0 * osBean.getTotalMemorySize()) * 100));
             }
             System.out.println("> Dealing with a new client.");
+            startTime = System.currentTimeMillis();
             DenseDoubleMatrix1D matrix = new DenseDoubleMatrix1D(input.getSinal().length);
             for (int i = 0; i < input.getSinal().length; i++) {
                 for (int j = 0; j < input.getSinal()[i].length; j++) {
@@ -125,22 +126,24 @@ public class BlasApplication {
             // System.out.println(input.getModelo());
             // === Process
             ResultCG res;
-            if (input.getModelo() == 1) {
+            if (input.getModelo() == 1 && input.getMetodo().equals("cgnr")) {
                 // System.out.println("Option: CGNR 60x60");
-                startTime = System.currentTimeMillis();
                 res = cgnr(matrix, h1);
                 // System.out.println("Finished. Sending result.");
-            } else {
+            } else if (input.getMetodo().equals("cgnr")) {
                 // System.out.println("Option: CGNR 30x30");
-                startTime = System.currentTimeMillis();
                 res = cgnr(matrix, h2);
                 // System.out.println("Finished. Sending result.");
+            } else if (input.getModelo() == 1) {
+                res = cgne(matrix, h1);
+            } else {
+                res = cgne(matrix, h2);
             }
             stopTime = System.currentTimeMillis();
             finished = new Date();
             return new ResultForm(res.getVectorFloat(), res.getStr(), (stopTime - startTime) / 1000.0,
                     input.getUsuario(),
-                    res.getIteration(), SDF.format(start), SDF.format(finished));
+                    res.getIteration(), SDF.format(start), SDF.format(finished), input.getMetodo().toUpperCase());
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
@@ -210,7 +213,7 @@ public class BlasApplication {
         String result = "";
 
         try {
-            //System.out.println(dir);
+            // System.out.println(dir);
             ImageIO.write(bi, "png", b64);
             result = bos.toString("UTF-8");
 

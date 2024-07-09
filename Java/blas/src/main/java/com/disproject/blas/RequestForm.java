@@ -5,12 +5,14 @@ public class RequestForm {
     private float[][] sinal;
     private int modelo;
     private int performance;
+    private String metodo;
 
-    public RequestForm(String user, float[][] sig, int model, int performance) {
+    public RequestForm(String user, float[][] sig, int model, int performance, String metodo) {
         this.usuario = user;
         this.sinal = sig;
         this.modelo = model;
         this.performance = performance;
+        this.metodo = metodo;
     }
 
     public void setUsuario(String user) {
@@ -27,6 +29,14 @@ public class RequestForm {
 
     public void setPerformance(int performance) {
         this.performance = performance;
+    }
+
+    public void setMetodo(String metodo) {
+        this.metodo = metodo;
+    }
+
+    public String getMetodo() {
+        return metodo;
     }
 
     public String getUsuario() {

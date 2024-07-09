@@ -69,6 +69,7 @@ app.get("/random", async (req, res) => {
     usuario: users[0],
     sinal: files[2],
     modelo: 1,
+    metodo: "cgnr",
     performance: 0,
   });
 
@@ -91,7 +92,7 @@ app.get("/random", async (req, res) => {
 });
 
 app.get("/many-tests", async (req, res) => {
-  const count = 100;
+  const count = 50;
   const requests = [];
 
   for (let i = 0; i < count; i++) {
@@ -138,11 +139,13 @@ const getRandomDataWithDelay = async () => {
 const getRandomData = async () => {
   const user = Math.floor(Math.random() * 7);
   const file = Math.floor(Math.random() * 6);
+  const metodo = Math.floor(Math.random() * 2);
   requisicoes++;
   const response = await axios.post(API_URL + "/blas", {
     usuario: users[user],
     sinal: files[file],
     modelo: file > 2 ? 2 : 1,
+    metodo: metodo == 0 ? "cgnr" : "cgne",
     performance: requisicoes % 5 == 0 ? 1 : 0,
   });
   return response.data;

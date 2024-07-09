@@ -11,8 +11,10 @@ public class ResultForm {
     private String time;
     private String cpu;
     private String mem;
+    private String metodo;
 
-    public ResultForm(float[][] sig, String s, double time, String user, int i, String dateStart, String dateEnd) {
+    public ResultForm(float[][] sig, String s, double time, String user, int i, String dateStart, String dateEnd,
+            String metodo) {
         this.sinal = sig;
         this.str = s;
         this.tempo = time;
@@ -20,6 +22,7 @@ public class ResultForm {
         this.interacoes = i;
         this.dataInicio = dateStart;
         this.dataFinal = dateEnd;
+        this.metodo = metodo;
     }
 
     public ResultForm(String time, String cpu, String mem) {
@@ -30,6 +33,10 @@ public class ResultForm {
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    public void setMetodo(String metodo) {
+        this.metodo = metodo;
     }
 
     public void setCpu(String cpu) {
@@ -106,5 +113,9 @@ public class ResultForm {
 
     public String getDataFinal() {
         return this.dataFinal;
+    }
+
+    public String getMetodo() {
+        return metodo;
     }
 }
