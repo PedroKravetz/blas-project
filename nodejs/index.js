@@ -67,7 +67,7 @@ app.get("/random", async (req, res) => {
 
   const result = await axios.post(API_URL + "/blas", {
     usuario: users[0],
-    sinal: files[2],
+    sinal: files[0],
     modelo: 1,
     metodo: "cgnr",
     performance: 0,
@@ -92,7 +92,7 @@ app.get("/random", async (req, res) => {
 });
 
 app.get("/many-tests", async (req, res) => {
-  const count = 50;
+  const count = 15;
   const requests = [];
 
   for (let i = 0; i < count; i++) {

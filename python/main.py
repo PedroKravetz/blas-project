@@ -17,20 +17,12 @@ current_directory = os.getcwd()
 app = Flask(__name__)
 
 #print("Reading Start")
-h1 = np.array(pd.read_csv(current_directory+'\\h1.csv', header=None, delimiter=','))
-h2 = np.array(pd.read_csv(current_directory+'\\h2.csv', header=None, delimiter=','))
-g1 = np.array(pd.read_csv(current_directory+'\\G-1.csv', header=None, delimiter=';'))
+h1 = np.array(pd.read_csv(current_directory+'/h1.csv', header=None, delimiter=','))
+h2 = np.array(pd.read_csv(current_directory+'/h2.csv', header=None, delimiter=','))
+#g1 = np.array(pd.read_csv(current_directory+'/G-1.csv', header=None, delimiter=';'))
 #print("Reading Finished")
 MAX_CONCURRENT_THREADS = 10
 semaphore = threading.Semaphore(MAX_CONCURRENT_THREADS)
-
-def normalize(l):
-    c=0
-    for j in l:
-        for i in j:
-            c+=i*i
-    c=np.sqrt(c)
-    return c
 
 def cgnr(g, h):
     i = 0
@@ -41,18 +33,18 @@ def cgnr(g, h):
     while (1):
         i+=1
         w=h.dot(p0)
-        nz0 = normalize(z0)
-        nw = normalize(w)
+        nz0 = np.linalg.norm(z0)
+        nw = np.linalg.norm(w)
         a = (nz0*nz0)/(nw*nw) 
         f1 = f0 + a*(p0)
         r1 = r0 - a*(w)
         z1 = h.transpose().dot(r1)
-        nz1 = normalize(z1)
+        nz1 = np.linalg.norm(z1)
         b = (nz1*nz1)/(nz0*nz0)
         p0 = z1 + b*p0
         f0=f1
         z0=z1
-        if (abs(normalize(r1) - normalize(r0)) < 0.0001):
+        if (abs(np.linalg.norm(r1) - np.linalg.norm(r0)) < 0.0001):
             if np.size(f1) == 900:
                 array2 = np.reshape(f1, (30, 30)).transpose()
                 data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
@@ -84,7 +76,7 @@ def cgne(g, h):
         r1 = r0 - a0*h.dot(p0)
         b0 = (r1.transpose().dot(r1))/(r0.transpose().dot(r0))
         p1 = h.transpose().dot(r1) + b0*p0
-        if (abs(normalize(r1)-normalize(r0))<0.0001):
+        if (abs(np.linalg.norm(r1)-np.linalg.norm(r0))<0.0001):
             if np.size(f1) == 900:
                 array2 = np.reshape(f1, (30, 30)).transpose()
                 data2 = im.fromarray((abs(array2*255)).astype(np.uint8))
@@ -145,7 +137,7 @@ def regularizacao2(matriz):
     return regularizacao1
 
 def reducao(matriz):
-    return normalize(matriz.transpose().dot(matriz))
+    return np.linalg.norm(matriz.transpose().dot(matriz))
 
 @app.post("/blas")
 def control():
@@ -200,14 +192,10 @@ def control():
 @app.get("/performance")
 def system_performance():
     semaphore.acquire()
-    cpu = psutil.cpu_percent(interval=1)
+    cpu = psutil.cpu_percent(interval=0.1)
     mem = psutil.virtual_memory()
     semaphore.release()
     return{"cpu": cpu, "mem": mem.percent, "time": datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]}
-
-@app.route("/")
-def hello_world():
-    return "<p> Hello World!</p>"
 
 
 app.run(host="localhost", port=5000)
