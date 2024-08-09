@@ -1,0 +1,188 @@
+>> 10 rounds
+
+[ 1 ] CGNR 60X60 A-60x60-1
+
+---
+MAX Start CPU: 10.0
+MIN Start CPU: 1.2
+Mean of Start CPU : 4.41
+---
+MAX Middle CPU: 39.4
+MIN Middle CPU: 4.1
+Mean of Middle CPU : 21.8
+---
+MAX End CPU: 5.3
+MIN End CPU: 0.4
+Mean of End CPU : 1.7600000000000002
+---
+MAX Start MEM: 67.9
+MIN Start MEM: 65.3
+Mean of Start MEM : 66.07000000000001
+---
+MAX Middle MEM: 70.7
+MIN Middle MEM: 65.7
+Mean of Middle MEM : 67.08000000000001
+---
+MAX End MEM: 67.8
+MIN End MEM: 64.4
+Mean of End MEM : 65.8
+
+[ 2 ] CGNR 60X60 G-1
+
+---
+MAX Start CPU: 18.1
+MIN Start CPU: 8.1
+Mean of Start CPU : 13.8
+---
+MAX Middle CPU: 28.0
+MIN Middle CPU: 10.9
+Mean of Middle CPU : 20.61
+---
+MAX End CPU: 12.9
+MIN End CPU: 4.3
+Mean of End CPU : 7.890000000000001
+---
+MAX Start MEM: 67.5
+MIN Start MEM: 67.0
+Mean of Start MEM : 67.22
+---
+MAX Middle MEM: 67.5
+MIN Middle MEM: 67.0
+Mean of Middle MEM : 67.22
+---
+MAX End MEM: 67.5
+MIN End MEM: 67.1
+Mean of End MEM : 67.21
+
+[ 3 ] CGNR 60X60 G-2
+
+---
+MAX Start CPU: 26.8
+MIN Start CPU: 6.6
+Mean of Start CPU : 12.24
+---
+MAX Middle CPU: 28.2
+MIN Middle CPU: 17.2
+Mean of Middle CPU : 20.59
+---
+MAX End CPU: 9.7
+MIN End CPU: 0.4
+Mean of End CPU : 4.34
+---
+MAX Start MEM: 67.6
+MIN Start MEM: 67.4
+Mean of Start MEM : 67.46000000000001
+---
+MAX Middle MEM: 67.6
+MIN Middle MEM: 67.4
+Mean of Middle MEM : 67.47
+---
+MAX End MEM: 67.6
+MIN End MEM: 67.4
+Mean of End MEM : 67.49
+
+[ 4 ] CGNR 30X30 A-30x30-1
+
+---
+MAX Start CPU: 11.7
+MIN Start CPU: 1.2
+Mean of Start CPU : 5.4399999999999995
+---
+MAX Middle CPU: 25.2
+MIN Middle CPU: 5.4
+Mean of Middle CPU : 15.719999999999999
+---
+MAX End CPU: 13.4
+MIN End CPU: 0.8
+Mean of End CPU : 4.74
+---
+MAX Start MEM: 56.2
+MIN Start MEM: 51.6
+Mean of Start MEM : 53.739999999999995
+---
+MAX Middle MEM: 56.4
+MIN Middle MEM: 51.8
+Mean of Middle MEM : 54.489999999999995
+---
+MAX End MEM: 56.1
+MIN End MEM: 51.2
+Mean of End MEM : 53.660000000000004
+
+[ 5 ] CGNR 30X30 g-30x30-1
+
+MAX Start CPU: 16.8
+MIN Start CPU: 7.6
+Mean of Start CPU : 10.99
+---
+MAX Middle CPU: 17.5
+MIN Middle CPU: 5.3
+Mean of Middle CPU : 13.9
+---
+MAX End CPU: 12.3
+MIN End CPU: 4.1
+Mean of End CPU : 8.59
+---
+MAX Start MEM: 51.8
+MIN Start MEM: 51.7
+Mean of Start MEM : 51.73
+---
+MAX Middle MEM: 51.8
+MIN Middle MEM: 51.7
+Mean of Middle MEM : 51.739999999999995
+---
+MAX End MEM: 51.8
+MIN End MEM: 51.7
+Mean of End MEM : 51.760000000000005
+
+[ 6 ] CGNR 30X30 g-30x30-2
+
+---
+MAX Start CPU: 18.3
+MIN Start CPU: 8.0
+Mean of Start CPU : 12.8
+---
+MAX Middle CPU: 23.0
+MIN Middle CPU: 11.5
+Mean of Middle CPU : 15.51
+---
+MAX End CPU: 13.1
+MIN End CPU: 4.8
+Mean of End CPU : 9.790000000000001
+---
+MAX Start MEM: 51.9
+MIN Start MEM: 51.7
+Mean of Start MEM : 51.760000000000005
+---
+MAX Middle MEM: 51.9
+MIN Middle MEM: 51.7
+Mean of Middle MEM : 51.77
+---
+MAX End MEM: 51.8
+MIN End MEM: 51.7
+Mean of End MEM : 51.77
+
+===============
+
+[ 7 ] CGNE 60X60 A-60x60-1
+
+More than 2000 iterations. Gave up on this one.
+
+[ 8 ] CGNE 60X60 G-1
+
+Not tested
+
+[ 9 ] CGNE 60X60 G-2
+
+Not tested
+
+[ 10 ] CGNE 30X30 A-30x30-1
+
+Not tested
+
+[ 11 ] CGNE 30X30 g-30x30-1
+
+Not tested
+
+[ 12 ] CGNE 30X30 g-30x30-2
+
+Not tested
