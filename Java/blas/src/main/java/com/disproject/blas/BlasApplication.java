@@ -193,14 +193,15 @@ public class BlasApplication {
 
         for (int i = 0; i < num; i++) {
             for (int j = 0; j < num; j++) {
-                // pixels[i][j] = (int) (Math.abs(image.get(k)*255));
-                pixels[i][j] = (int) (Math.abs(image.get(k) * (255 / max_value - min_value)));
+                pixels[i][j] = (int) (Math.abs(image.get(k)*255));
+                //pixels[i][j] = (int) (Math.abs(image.get(k) * (255 / max_value - min_value)));
                 k++;
             }
         }
 
-        BufferedImage bi = new BufferedImage(num, num, BufferedImage.TYPE_INT_BGR);
-
+        //BufferedImage bi = new BufferedImage(num, num, BufferedImage.TYPE_INT_BGR);
+        BufferedImage bi = new BufferedImage(num, num, BufferedImage.TYPE_BYTE_GRAY);
+        
         for (int x = 0; x < num; x++) {
             for (int y = 0; y < num; y++) {
                 int rgbPixel = (int) pixels[x][y] << 16 | (int) pixels[x][y] << 8 | (int) pixels[x][y];
@@ -242,11 +243,13 @@ public class BlasApplication {
     }
 
     static double normalize_ColtVector(DoubleMatrix1D v) {
+        Algebra alg = new Algebra();
         double c = 0;
-        for (int j = 0; j < v.size(); j++) {
-            c += v.get(j) * v.get(j);
+        DoubleMatrix2D new_v = new DenseDoubleMatrix2D(v.size(), 1);
+        for (int i = 0; i < v.size(); i++){
+            new_v.set(i, 0, v.get(i));
         }
-        c = Math.sqrt(c);
+        c = alg.normF(new_v);
         return c;
     }
 
