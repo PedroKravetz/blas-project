@@ -24,6 +24,28 @@ h2 = np.array(pd.read_csv(current_directory+'/h2.csv', header=None, delimiter=',
 MAX_CONCURRENT_THREADS = 10
 semaphore = threading.Semaphore(MAX_CONCURRENT_THREADS)
 
+'''
+if 100 % max_testes = 0:
+    100 / max_testes - 1
+else:
+    100 / max_testes
+
+# ex: 100 % 20 = 4 threads
+'''
+
+'''
+cpus = [7, 8, 15]
+mems = [1, 1, 1]
+
+current_cpu = getCPU()
+current_mem = getMEM()
+if img == "x" and modelo == "cgnr":
+    if current_cpu + cpus[2] > 80 or current_mem + mems[2] > 80:
+        wait/sleep/bye
+    else:
+        cgnr()
+'''
+
 def cgnr(g, h):
     i = 0
     f0 = 0
@@ -153,6 +175,7 @@ def control():
         usuario = json["usuario"]
         modelo = int(json["modelo"])
         metodo = json["metodo"]
+
         # print(usuario)
         # print(modelo)
         # print(g1)
