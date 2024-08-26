@@ -10,6 +10,8 @@ const API_URL = "http://localhost:5000";
 
 let requisicoes = 0;
 
+app.use(express.static("public"));
+
 const users = ["Camilla", "Pedro", "Paulo", "Ana", "Maria", "Eduardo", "José"];
 let files = [];
 let arquivo = [];
@@ -67,7 +69,7 @@ app.get("/random", async (req, res) => {
 
   const result = await axios.post(API_URL + "/blas", {
     usuario: users[0],
-    sinal: files[0],
+    sinal: files[2],
     modelo: 1,
     metodo: "cgnr",
     performance: 0,
