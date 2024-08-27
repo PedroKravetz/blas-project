@@ -142,10 +142,25 @@ const getRandomData = async () => {
   const user = Math.floor(Math.random() * 7);
   const file = Math.floor(Math.random() * 6);
   const metodo = Math.floor(Math.random() * 2);
+  let fname = "";
+  if (file == 0){
+    fname = "G-1";
+  } else if (file == 1){
+    fname = "G-2";
+  } else if (file == 2){
+    fname = "A-60x60-1";
+  } else if (file == 3){
+    fname = "g-30x30-1";
+  } else if (file == 4){
+    fname = "g-30x30-2";
+  } else {
+    fname = "A-30x30-1";
+  }
   requisicoes++;
   const response = await axios.post(API_URL + "/blas", {
     usuario: users[user],
     sinal: files[file],
+    arquivo: fname,
     modelo: file > 2 ? 2 : 1,
     metodo: metodo == 0 ? "cgnr" : "cgne",
     performance: requisicoes % 5 == 0 ? 1 : 0,
