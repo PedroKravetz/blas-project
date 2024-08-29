@@ -23,21 +23,17 @@ h2 = np.array(pd.read_csv(current_directory+'/h2.csv', header=None, delimiter=',
 
 active_clients = 0
 waiting_clients = 0
-# test_rounds > 2, how many times exec alg to determine cpu and mem
-# dif > 0, determine difference allowed between default and test
+# test_rounds > 1, how many times exec alg to determine cpu and mem
 # cpu_cap and mem_cap > max cpu/mem usage
 test_rounds = 5
-dif = 2.0
 cpu_cap = 80.0
 mem_cap = 90.0
 
 # sinal G1, G2, A60, g1, g2, A30
-cgnr_cpus = [16.414, 18.2, 20.03, 3.40, 4.31, 4.23]
-cgnr_mems = [31.56, 34.37, 34.46, 5.10, 4.87, 4.81]
-
-cgne_cpus = [11.1, 11.08, 16.44, 2.12, 2.42, 13.55]
-cgne_mems = [0.02, 0.06, 0.06, 0.02, 0.0, 0.06]
-sleep_times = [20, 8, 8, 5, 5, 10]
+cgnr_cpus = [0, 0, 0, 0, 0, 0]
+cgnr_mems = [0, 0, 0, 0, 0, 0]
+cgne_cpus = [0, 0, 0, 0, 0, 0]
+cgne_mems = [0, 0, 0, 0, 0, 0]
 
 
 def determine_cpu_mem():
@@ -50,77 +46,47 @@ def determine_cpu_mem():
     for i in range(0,6):
         print(f"file: {files[i]}")
         g = np.array(pd.read_csv(current_directory+files[i], header=None, delimiter=';'))
-        
-        # first cgnr
+      
         time.sleep(15)
-        start_cpu.append(psutil.cpu_percent(interval=0.1))
-        start_mem.append(psutil.virtual_memory().percent)
-        if i < 3:
-            mcpu, mmem = det_cgnr(g, h1)
-        else:
-            mcpu, mmem = det_cgnr(g, h2)
-
-        if abs(mcpu - start_cpu[0]) >= (cgnr_cpus[i] - dif) and abs(mcpu - start_cpu[0]) <= (cgnr_cpus[i] + dif) and abs(mmem - start_mem[0]) >= (cgnr_mems[i] - dif) and abs(mmem - start_mem[0]) <= (cgnr_mems[i] + dif):
-            # if close to default values, theres no need to change
-            start_cpu.clear()
-            start_mem.clear()
-        else:
-            # needs to change
+        for j in range(0,test_rounds):
+            start_cpu.append(psutil.cpu_percent(interval=0.1))
+            start_mem.append(psutil.virtual_memory().percent)
+            if i < 3:
+                mcpu, mmem = det_cgnr(g, h1)
+            else:
+                mcpu, mmem = det_cgnr(g, h2)
             mid_cpu.append(mcpu)
             mid_mem.append(mmem)
-            for j in range(0,test_rounds-1):
-                start_cpu.append(psutil.cpu_percent(interval=0.1))
-                start_mem.append(psutil.virtual_memory().percent)
-                if i < 3:
-                    mcpu, mmem = det_cgnr(g, h1)
-                else:
-                    mcpu, mmem = det_cgnr(g, h2)
-                mid_cpu.append(mcpu)
-                mid_mem.append(mmem)
-                time.sleep(5)
-           
-            cgnr_cpus[i] = abs((sum(mid_cpu)/len(mid_cpu)) - (sum(start_cpu)/len(start_cpu)))
-            cgnr_mems[i] = abs((sum(mid_mem)/len(mid_mem)) - (sum(start_mem)/len(start_mem)))
-            start_cpu.clear()
-            start_mem.clear()
-            mid_cpu.clear()
-            mid_mem.clear()
+            time.sleep(5)
         
-        # second cgne
-        time.sleep(15)
-        start_cpu.append(psutil.cpu_percent(interval=0.1))
-        start_mem.append(psutil.virtual_memory().percent)
-        if i < 3:
-            mcpu, mmem = det_cgne(g, h1)
-        else:
-            mcpu, mmem = det_cgne(g, h2)
+        cgnr_cpus[i] = abs((sum(mid_cpu)/len(mid_cpu)) - (sum(start_cpu)/len(start_cpu)))
+        cgnr_mems[i] = abs((sum(mid_mem)/len(mid_mem)) - (sum(start_mem)/len(start_mem)))
+        start_cpu.clear()
+        start_mem.clear()
+        mid_cpu.clear()
+        mid_mem.clear()
 
-        if abs(mcpu - start_cpu[0]) >= (cgne_cpus[i] - dif) and abs(mcpu - start_cpu[0]) <= (cgne_cpus[i] + dif) and abs(mmem - start_mem[0]) >= (cgne_mems[i] - dif) and abs(mmem - start_mem[0]) <= (cgne_mems[i] + dif):
-            # if close to default values, theres no need to change
-            start_cpu.clear()
-            start_mem.clear()
-        else:
-            # needs to change
+        '''
+        # cgne
+        time.sleep(15)
+        for j in range(0,test_rounds):
+            start_cpu.append(psutil.cpu_percent(interval=0.1))
+            start_mem.append(psutil.virtual_memory().percent)
+            if i < 3:
+                mcpu, mmem = det_cgne(g, h1)
+            else:
+                mcpu, mmem = det_cgne(g, h2)
             mid_cpu.append(mcpu)
             mid_mem.append(mmem)
-            for j in range(0,test_rounds-1):
-                start_cpu.append(psutil.cpu_percent(interval=0.1))
-                start_mem.append(psutil.virtual_memory().percent)
-                if i < 3:
-                    mcpu, mmem = det_cgne(g, h1)
-                else:
-                    mcpu, mmem = det_cgne(g, h2)
-                mid_cpu.append(mcpu)
-                mid_mem.append(mmem)
-                time.sleep(5)
-           
-            cgne_cpus[i] = abs((sum(mid_cpu)/len(mid_cpu)) - (sum(start_cpu)/len(start_cpu)))
-            cgne_mems[i] = abs((sum(mid_mem)/len(mid_mem)) - (sum(start_mem)/len(start_mem)))
-            start_cpu.clear()
-            start_mem.clear()
-            mid_cpu.clear()
-            mid_mem.clear()
-        g = []
+            time.sleep(5)
+        
+        cgne_cpus[i] = abs((sum(mid_cpu)/len(mid_cpu)) - (sum(start_cpu)/len(start_cpu)))
+        cgne_mems[i] = abs((sum(mid_mem)/len(mid_mem)) - (sum(start_mem)/len(start_mem)))
+        start_cpu.clear()
+        start_mem.clear()
+        mid_cpu.clear()
+        mid_mem.clear()
+        '''
     print("End determine_cpu_mem")
 
 
@@ -335,23 +301,16 @@ def regularizacao2(matriz):
 def reducao(matriz):
     return np.linalg.norm(matriz.transpose().dot(matriz))
 
+
 def client_wait(id, alg):
     global active_clients
     global waiting_clients
     permit = False
-    count = 0
     while (not permit):
-        if count == 10:
-            print(f"client still waiting, file {id}")
-            print(f"Active clients: {active_clients}, waiting clients: {waiting_clients}")
-            count = 0
-        count += 1
-        time.sleep(sleep_times[id])
         current_cpu = psutil.cpu_percent(interval=0.1)
         current_mem = psutil.virtual_memory().percent
         if active_clients == 0 or (alg == "cgnr" and (current_cpu + cgnr_cpus[id] <= cpu_cap and current_mem + cgnr_mems[id] <= mem_cap)) or (alg == "cgne" and (current_cpu + cgne_cpus[id] <= cpu_cap and current_mem + cgne_mems[id] <= mem_cap)):
             permit = True
-            print(f"client exiting wait time {id}")
     waiting_clients -= 1
 
 
@@ -359,7 +318,7 @@ def client_wait(id, alg):
 def control():
         global active_clients
         global waiting_clients
-
+        print(f"Active clients: {active_clients}, waiting clients: {waiting_clients}")
         dataInicio = datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]
         #semaphore.acquire()  # Bloqueia até que um permit esteja disponível
         json = request.json
@@ -373,51 +332,65 @@ def control():
         modelo = int(json["modelo"])
         metodo = json["metodo"]
 
+        metodo = "cgnr"
+
         if arquivo == "G-1":
             current_cpu = psutil.cpu_percent(interval=0.1)
             current_mem = psutil.virtual_memory().percent
             if (metodo == "cgnr" and (current_cpu + cgnr_cpus[0] > cpu_cap or current_mem + cgnr_mems[0] > mem_cap)) or (metodo == "cgne" and (current_cpu + cgne_cpus[0] > cpu_cap or current_mem + cgne_mems[0] > mem_cap)):
-                print("[] New client wait, file 0")
                 waiting_clients += 1
-                client_wait(0, metodo)
+                t_wait = threading.Thread(target=client_wait,args=(0,metodo,))
+                t_wait.start()
+                t_wait.join()
         elif arquivo == "G-2":
             current_cpu = psutil.cpu_percent(interval=0.1)
             current_mem = psutil.virtual_memory().percent
             if (metodo == "cgnr" and (current_cpu + cgnr_cpus[1] > cpu_cap or current_mem + cgnr_mems[1] > mem_cap)) or (metodo == "cgne" and (current_cpu + cgne_cpus[1] > cpu_cap or current_mem + cgne_mems[1] > mem_cap)):
-                print("[] New client wait, file 1")
+                #print("[] New client wait, file 1")
                 waiting_clients += 1
-                client_wait(1, metodo)
+                t_wait = threading.Thread(target=client_wait,args=(1,metodo,))
+                t_wait.start()
+                t_wait.join()
         elif arquivo == "A-60x60-1":
             current_cpu = psutil.cpu_percent(interval=0.1)
             current_mem = psutil.virtual_memory().percent
             if (metodo == "cgnr" and (current_cpu + cgnr_cpus[2] > cpu_cap or current_mem + cgnr_mems[2] > mem_cap)) or (metodo == "cgne" and (current_cpu + cgne_cpus[2] > cpu_cap or current_mem + cgne_mems[2] > mem_cap)):
-                print("[] New client wait, file 2")
+                #print("[] New client wait, file 2")
                 waiting_clients += 1
-                client_wait(2, metodo)
+                t_wait = threading.Thread(target=client_wait,args=(2,metodo,))
+                t_wait.start()
+                t_wait.join()
         elif arquivo == "g-30x30-1":
             current_cpu = psutil.cpu_percent(interval=0.1)
             current_mem = psutil.virtual_memory().percent
             if (metodo == "cgnr" and (current_cpu + cgnr_cpus[3] > cpu_cap or current_mem + cgnr_mems[3] > mem_cap)) or (metodo == "cgne" and (current_cpu + cgne_cpus[3] > cpu_cap or current_mem + cgne_mems[3] > mem_cap)):
-                print("[] New client wait, file 3")
+                #print("[] New client wait, file 3")
                 waiting_clients += 1
-                client_wait(3, metodo)
+                t_wait = threading.Thread(target=client_wait,args=(3,metodo,))
+                t_wait.start()
+                t_wait.join()
         elif arquivo == "g-30x30-2":
             current_cpu = psutil.cpu_percent(interval=0.1)
             current_mem = psutil.virtual_memory().percent
             if (metodo == "cgnr" and (current_cpu + cgnr_cpus[4] > cpu_cap or current_mem + cgnr_mems[4] > mem_cap)) or (metodo == "cgne" and (current_cpu + cgne_cpus[4] > cpu_cap or current_mem + cgne_mems[4] > mem_cap)):
-                print("[] New client wait, file 4")
+                #print("[] New client wait, file 4")
                 waiting_clients += 1
-                client_wait(4, metodo)
+                t_wait = threading.Thread(target=client_wait,args=(4,metodo,))
+                t_wait.start()
+                t_wait.join()
         elif arquivo == "A-30x30-1":
             current_cpu = psutil.cpu_percent(interval=0.1)
             current_mem = psutil.virtual_memory().percent
             if (metodo == "cgnr" and (current_cpu + cgnr_cpus[5] > cpu_cap or current_mem + cgnr_mems[5] > mem_cap)) or (metodo == "cgne" and (current_cpu + cgne_cpus[5] > cpu_cap or current_mem + cgne_mems[5] > mem_cap)):
-                print("[] New client wait, file 5")
+                #print("[] New client wait, file 5")
                 waiting_clients += 1
-                client_wait(5, metodo)
+                t_wait = threading.Thread(target=client_wait,args=(5,metodo,))
+                t_wait.start()
+                t_wait.join()
 
         active_clients += 1
         print("> Dealing with a client")
+        print(f"Active clients: {active_clients}, waiting clients: {waiting_clients}")
         
         # print(usuario)
         # print(modelo)
@@ -471,8 +444,8 @@ def system_performance():
 choice = input("Press '1' to determine cpu and mem, else use default values.\n[>] Your choice: ")
 if choice == "1":
     determine_cpu_mem()
-    #print(f"cpus cgnr: {cgnr_cpus}")
-    #print(f"mems cgnr: {cgnr_mems}")
+    print(f"cpus cgnr: {cgnr_cpus}")
+    print(f"mems cgnr: {cgnr_mems}")
     #print(f"cpus cgne: {cgne_cpus}")
     #print(f"mems cgne: {cgne_mems}")
 app.run(host="localhost", port=5000)
