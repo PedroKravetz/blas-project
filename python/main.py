@@ -26,7 +26,7 @@ waiting_clients = 0
 # test_rounds > 2, how many times exec alg to determine cpu and mem
 # dif > 0, determine difference allowed between default and test
 # cpu_cap and mem_cap > max cpu/mem usage
-test_rounds = 5
+test_rounds = 2
 dif = 2.0
 cpu_cap = 80.0
 mem_cap = 90.0
@@ -71,6 +71,7 @@ def determine_cpu_mem():
             start_cpu.clear()
             start_mem.clear()
         else:
+            time.sleep(5)
             # needs to change
             mid_cpu.append(mcpu)
             mid_mem.append(mmem)
@@ -348,11 +349,13 @@ def client_wait(id, alg):
     global waiting_clients
     permit = False
     while (not permit):
+        semaphore6.acquire()
         current_cpu = psutil.cpu_percent(interval=0.1)
         current_mem = psutil.virtual_memory().percent
         if active_clients == 0 or (alg == "cgnr" and (current_cpu + cgnr_cpus[id] <= cpu_cap and current_mem + cgnr_mems[id] <= mem_cap)) or (alg == "cgne" and (current_cpu + cgne_cpus[id] <= cpu_cap and current_mem + cgne_mems[id] <= mem_cap)):
             permit = True
             #print(f"Client exiting wait time {id}")
+        semaphore6.release()
     waiting_clients -= 1
 
 
@@ -374,8 +377,6 @@ def control():
         modelo = int(json["modelo"])
         metodo = json["metodo"]
 
-        metodo = "cgnr"
-
         if arquivo == "G-1":
             current_cpu = psutil.cpu_percent(interval=0.1)
             current_mem = psutil.virtual_memory().percent
@@ -383,8 +384,10 @@ def control():
                 #print("[] New client wait, file 0")
                 waiting_clients += 1
                 t_wait = threading.Thread(target=client_wait,args=(0,metodo,))
+                semaphore0.acquire()
                 t_wait.start()
                 t_wait.join()
+                semaphore0.release()
         elif arquivo == "G-2":
             current_cpu = psutil.cpu_percent(interval=0.1)
             current_mem = psutil.virtual_memory().percent
@@ -392,8 +395,10 @@ def control():
                 #print("[] New client wait, file 1")
                 waiting_clients += 1
                 t_wait = threading.Thread(target=client_wait,args=(1,metodo,))
+                semaphore1.acquire()
                 t_wait.start()
                 t_wait.join()
+                semaphore1.release()
         elif arquivo == "A-60x60-1":
             current_cpu = psutil.cpu_percent(interval=0.1)
             current_mem = psutil.virtual_memory().percent
@@ -401,8 +406,10 @@ def control():
                 #print("[] New client wait, file 2")
                 waiting_clients += 1
                 t_wait = threading.Thread(target=client_wait,args=(2,metodo,))
+                semaphore2.acquire()
                 t_wait.start()
                 t_wait.join()
+                semaphore2.release()
         elif arquivo == "g-30x30-1":
             current_cpu = psutil.cpu_percent(interval=0.1)
             current_mem = psutil.virtual_memory().percent
@@ -410,8 +417,10 @@ def control():
                 #print("[] New client wait, file 3")
                 waiting_clients += 1
                 t_wait = threading.Thread(target=client_wait,args=(3,metodo,))
+                semaphore3.acquire()
                 t_wait.start()
                 t_wait.join()
+                semaphore3.release()
         elif arquivo == "g-30x30-2":
             current_cpu = psutil.cpu_percent(interval=0.1)
             current_mem = psutil.virtual_memory().percent
@@ -419,8 +428,10 @@ def control():
                 #print("[] New client wait, file 4")
                 waiting_clients += 1
                 t_wait = threading.Thread(target=client_wait,args=(4,metodo,))
+                semaphore4.acquire()
                 t_wait.start()
                 t_wait.join()
+                semaphore4.release()
         elif arquivo == "A-30x30-1":
             current_cpu = psutil.cpu_percent(interval=0.1)
             current_mem = psutil.virtual_memory().percent
@@ -428,8 +439,10 @@ def control():
                 #print("[] New client wait, file 5")
                 waiting_clients += 1
                 t_wait = threading.Thread(target=client_wait,args=(5,metodo,))
+                semaphore5.acquire()
                 t_wait.start()
                 t_wait.join()
+                semaphore5.release()
 
         active_clients += 1
         print("> Dealing with a client")
@@ -470,7 +483,7 @@ def control():
         #print("Terminou")
         active_clients -= 1
         print(f"Active clients: {active_clients}, waiting clients: {waiting_clients}")
-        return {"sinal": lista[0].tolist(), "str": lista[2], "tempo": fim, "usuario": usuario, "interacoes": lista[1], "dataInicio": dataInicio, "dataFinal": dataFinal, "metodo":  metodo.upper()}, 200
+        return {"sinal": lista[0].tolist(), "str": lista[2], "tempo": fim, "usuario": usuario, "interacoes": lista[1], "dataInicio": dataInicio, "dataFinal": dataFinal, "metodo":  metodo.upper(), "arquivo":arquivo}, 200
         #return {"retorno": "verdadeiro"}, 200
     
 @app.get("/performance")
@@ -482,8 +495,13 @@ def system_performance():
     return{"cpu": cpu, "mem": mem.percent, "time": datetime.now().strftime('%d/%m/%Y %H:%M:%S.%f')[:-4]}
 
 
-#MAX_CONCURRENT_THREADS = 10
-#semaphore = threading.Semaphore(MAX_CONCURRENT_THREADS)
+semaphore0 = threading.Semaphore(1)
+semaphore1 = threading.Semaphore(1)
+semaphore2 = threading.Semaphore(1)
+semaphore3 = threading.Semaphore(1)
+semaphore4 = threading.Semaphore(1)
+semaphore5 = threading.Semaphore(1)
+semaphore6 = threading.Semaphore(1)
 choice = input("Press '1' to determine cpu and mem, else use default values.\n[>] Your choice: ")
 if choice == "1":
     determine_cpu_mem()

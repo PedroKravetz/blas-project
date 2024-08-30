@@ -66,13 +66,28 @@ app.get("/", (req, res) => {
 
 app.get("/random", async (req, res) => {
   let performance1 = await getPerformance();
-
+  let file = 5;
+  let fname;
+  if (file == 0){
+    fname = "G-1";
+  } else if (file == 1){
+    fname = "G-2";
+  } else if (file == 2){
+    fname = "A-60x60-1";
+  } else if (file == 3){
+    fname = "g-30x30-1";
+  } else if (file == 4){
+    fname = "g-30x30-2";
+  } else {
+    fname = "A-30x30-1";
+  }
   const result = await axios.post(API_URL + "/blas", {
     usuario: users[0],
-    sinal: files[2],
-    modelo: 1,
+    sinal: files[file],
+    modelo: 2,
     metodo: "cgnr",
     performance: 0,
+    arquivo: fname
   });
 
   let performance2 = await getPerformance();
@@ -89,12 +104,12 @@ app.get("/random", async (req, res) => {
     // to get a value that is either negative, positive, or zero.
     return new Date(a.time) - new Date(b.time);
   });
-
+  console.log(aux);
   res.render("relatorios.ejs", { imagens: aux, performance: aux2 });
 });
 
 app.get("/many-tests", async (req, res) => {
-  const count = 15;
+  const count = 100;
   const requests = [];
 
   for (let i = 0; i < count; i++) {
@@ -141,7 +156,6 @@ const getRandomDataWithDelay = async () => {
 const getRandomData = async () => {
   const user = Math.floor(Math.random() * 7);
   const file = Math.floor(Math.random() * 6);
-  const metodo = Math.floor(Math.random() * 2);
   let fname = "";
   if (file == 0){
     fname = "G-1";
@@ -162,7 +176,7 @@ const getRandomData = async () => {
     sinal: files[file],
     arquivo: fname,
     modelo: file > 2 ? 2 : 1,
-    metodo: metodo == 0 ? "cgnr" : "cgne",
+    metodo: "cgnr",
     performance: requisicoes % 5 == 0 ? 1 : 0,
   });
   return response.data;
