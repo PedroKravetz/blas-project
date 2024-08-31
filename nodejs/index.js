@@ -3,14 +3,13 @@ import bodyParser from "body-parser";
 import axios from "axios";
 import fs from "fs";
 import { parse } from "csv-parse";
+import moment from "moment";
 
 const app = express();
 const port = 3000;
 const API_URL = "http://localhost:5000";
 
 let requisicoes = 0;
-
-app.use(express.static("public"));
 
 const users = ["Camilla", "Pedro", "Paulo", "Ana", "Maria", "Eduardo", "José"];
 let files = [];
@@ -58,6 +57,7 @@ fs.createReadStream("../A-30x30-1.csv")
   });
 files.push(arquivo6);
 
+app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
@@ -66,17 +66,17 @@ app.get("/", (req, res) => {
 
 app.get("/random", async (req, res) => {
   let performance1 = await getPerformance();
-  let file = 5;
+  let file = 2;
   let fname;
-  if (file == 0){
+  if (file == 0) {
     fname = "G-1";
-  } else if (file == 1){
+  } else if (file == 1) {
     fname = "G-2";
-  } else if (file == 2){
+  } else if (file == 2) {
     fname = "A-60x60-1";
-  } else if (file == 3){
+  } else if (file == 3) {
     fname = "g-30x30-1";
-  } else if (file == 4){
+  } else if (file == 4) {
     fname = "g-30x30-2";
   } else {
     fname = "A-30x30-1";
@@ -84,10 +84,10 @@ app.get("/random", async (req, res) => {
   const result = await axios.post(API_URL + "/blas", {
     usuario: users[0],
     sinal: files[file],
-    modelo: 2,
+    modelo: 1,
     metodo: "cgnr",
     performance: 0,
-    arquivo: fname
+    arquivo: fname,
   });
 
   let performance2 = await getPerformance();
@@ -99,12 +99,6 @@ app.get("/random", async (req, res) => {
   aux2.push(performance1);
   aux2.push(performance2);
 
-  aux2.sort(function (a, b) {
-    // Turn your strings into dates, and then subtract them
-    // to get a value that is either negative, positive, or zero.
-    return new Date(a.time) - new Date(b.time);
-  });
-  console.log(aux);
   res.render("relatorios.ejs", { imagens: aux, performance: aux2 });
 });
 
@@ -121,11 +115,18 @@ app.get("/many-tests", async (req, res) => {
   }
 
   requisicoes = 0;
+  let aux1 = [];
   let aux2 = [];
 
   let performance1 = await getPerformance();
   const results = await Promise.all(requests);
   let performance2 = await getPerformance();
+
+  let resultados = results.filter((result) => result.usuario);
+
+  for (let i = 0; i < resultados.length; i++) {
+    aux1.push(resultados[i]);
+  }
 
   requisicoes = 0;
   aux2.push(performance1);
@@ -135,14 +136,20 @@ app.get("/many-tests", async (req, res) => {
   }
   aux2.push(performance2);
 
-  aux2.sort(function (a, b) {
+  aux1 = aux1.sort(function (a, b) {
     // Turn your strings into dates, and then subtract them
     // to get a value that is either negative, positive, or zero.
-    return new Date(a.time) - new Date(b.time);
+    return moment(a.dataInicio) - moment(b.dataInicio);
+  });
+
+  aux2 = aux2.sort(function (a, b) {
+    // Turn your strings into dates, and then subtract them
+    // to get a value that is either negative, positive, or zero.
+    return moment(a.dataInicio) - moment(b.dataInicio);
   });
 
   res.render("relatorios.ejs", {
-    imagens: results.filter((result) => result.usuario),
+    imagens: aux1,
     performance: aux2,
   });
 });
@@ -157,15 +164,15 @@ const getRandomData = async () => {
   const user = Math.floor(Math.random() * 7);
   const file = Math.floor(Math.random() * 6);
   let fname = "";
-  if (file == 0){
+  if (file == 0) {
     fname = "G-1";
-  } else if (file == 1){
+  } else if (file == 1) {
     fname = "G-2";
-  } else if (file == 2){
+  } else if (file == 2) {
     fname = "A-60x60-1";
-  } else if (file == 3){
+  } else if (file == 3) {
     fname = "g-30x30-1";
-  } else if (file == 4){
+  } else if (file == 4) {
     fname = "g-30x30-2";
   } else {
     fname = "A-30x30-1";
